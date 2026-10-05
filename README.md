@@ -32,15 +32,15 @@ Page « Opérations » : un achat ou une vente = valeur (code ISIN de l'avis d'o
 
 ## Tableau de bord
 
-- Valorisation, plus-value latente et variation du jour, frais compris dans le montant investi.
+- Valorisation, plus-value latente et variation du jour, frais compris dans le montant investi, plus-values réalisées par les ventes.
 - Courbe de la valorisation face au montant investi depuis le premier achat (1 mois à tout l'historique, 5 ans au plus).
-- Une ligne par valeur : quantité, prix de revient unitaire (frais compris), cours, plus-value, poids, tendance.
-- Fiche d'une valeur (clic sur son nom) : cours avec moyennes mobiles 50 et 200 séances, achats et PRU sur la courbe, performances (1, 3, 6 mois, 1 an, depuis janvier), plus haut et plus bas sur 52 semaines, volatilité annualisée.
+- Une ligne par valeur détenue : quantité, prix de revient unitaire (frais compris), cours, plus-value, poids, tendance.
+- Fiche d'une valeur (clic sur son nom) : cours avec moyennes mobiles 50 et 200 séances, opérations et PRU sur la courbe, performances (1, 3, 6 mois, 1 an, depuis janvier), plus haut et plus bas sur 52 semaines, volatilité annualisée.
 - Tendance haussière : cours et MM50 au-dessus de la MM200 ; baissière : les deux en dessous ; neutre sinon ; rien sous 200 séances d'historique.
 
 ## Suivi
 
-Page « Suivi » : suivre une action ou un ETF par son code ISIN sans l'avoir acheté (cours, variations, tendance) ; sa fiche est la même qu'une valeur détenue, sans les montants.
+Page « Suivi » : suivre une action ou un ETF par son code ISIN sans l'avoir acheté (cours, variations sur 1 mois et 1 an, écart au plus haut, tendance), ou arrêter de la suivre (confirmation demandée, les opérations restent). Sa fiche est la même qu'une valeur détenue, sans les montants. Une valeur achetée ou vendue y est ajoutée automatiquement.
 
 ## Marchés
 
@@ -57,4 +57,17 @@ En tête de l'accueil : Euronext Paris (9 h – 17 h 30, où se traitent les ETF
 
 Yahoo Finance, gratuit et sans clé (API publique non documentée), cours différés gardés 10 minutes en mémoire. Montants additionnés sans conversion de devise (PEA : valeurs en euros). Fournisseur remplaçable derrière `MarketData` (`backend/src/market/`).
 
-Tests : `docker compose exec backend npm run test:cov`.
+## Interface
+
+Thème clair, en français, utilisable sur mobile. Animations seulement en réponse à une action (changement de page, ligne ajoutée, tracé des courbes, arrivée des articles), coupées si le système demande moins d'animations.
+
+## Développement
+
+```sh
+docker compose exec backend npm run test:cov       # tests unitaires, intégration et e2e + couverture (100 % exigé)
+docker compose exec backend npm run lint
+docker compose exec frontend npm run typecheck
+docker compose exec backend npm run db:generate -- --name <nom>   # après un changement de table
+```
+
+Règles de code : `CLAUDE.md`.

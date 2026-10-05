@@ -1,22 +1,53 @@
 # PEA — règles projet
 
-Stack et conventions reprises de `../footix` (son `CLAUDE.md`, `backend/CLAUDE.md`, `frontend/CLAUDE.md` font foi).
+Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendances, actualités). Stack et conventions inspirées de `../footix`, mais seules les règles ci-dessous s'appliquent ici (pas d'inscription, d'emails, de rôles ni de visite guidée).
+
+## Général
 
 - Tout passe par Docker (`docker compose exec <backend|frontend> ...`), jamais `npm` sur l'hôte (Node trop ancien).
-- Workspace npm : `shared/` (DTO Zod), `backend/` (Nest + Drizzle, hexagonal), `frontend/` (Nuxt UI), un seul lockfile à la racine.
-- Un DTO = `shared/src/<domaine>/<nom>.dto.ts`, réexporté dans `shared/src/index.ts` (imports relatifs en `.ts`).
-- Back : `src/<domaine>/{domain,application,infrastructure}/`, un service par route ; erreur métier = sous-classe de `common/domain/errors/`.
-- Repository = port qui étend `BaseRepository` + adaptateur qui étend `DrizzleRepository` ; entité absente = `orThrow(...)` ; body validé par `ZodValidationPipe`.
+- Workspace npm : `shared/` (DTO Zod et code commun), `backend/` (Nest + Drizzle, hexagonal), `frontend/` (Nuxt UI), un seul lockfile à la racine.
+- Un DTO = `shared/src/<domaine>/<nom>.dto.ts`, réexporté dans `shared/src/index.ts` ; dans `shared/` : imports relatifs en `.ts`, pas d'`enum`/`namespace` (chargé sans compilation).
+- La validation vit uniquement dans le schéma partagé, messages en français qui disent comment corriger.
+- Code en anglais, commentaires et textes d'interface en français (tutoiement).
+- Pas d'abstraction « pour plus tard » ; raccourci assumé = commentaire `ponytail:`.
+
+## Back
+
+- `src/<domaine>/{domain,application,infrastructure}/` + `<domaine>.module.ts`, transverse dans `src/common/`.
+- Un service par route (`application/<action>.service.ts`, une méthode `execute`) ; erreur métier = `domain/errors/<nom>.error.ts`, sous-classe d'une erreur de `common/domain/errors/`, jamais d'exception HTTP.
+- Repository = port qui étend `BaseRepository` + adaptateur qui étend `DrizzleRepository`, liés dans le module ; entité absente = `orThrow(...)` ; body validé par `ZodValidationPipe` avec un schéma `@pea/shared`.
+- Ressource d'une personne (opération, valeur suivie) : celle d'un autre compte répond comme inexistante (404).
+- Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>` (migrations appliquées au démarrage).
+- Imports relatifs en `.js` (ESM).
 - Pas d'inscription (voulu) : comptes créés par `npm run user:create` (`backend/src/create-user.ts`).
-- Route protégée = `@Authorize()` (guard global `SessionGuard`, 401 sans session), `@CurrentUser()` donne la personne connectée ; sans décorateur, la route est publique.
-- Route publique qui teste un mot de passe = `@RateLimit(...)`.
-- Front : pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; formulaire = `FormBuilder` + schéma `@pea/shared` ; compte via `useAuth()`.
-- Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>`.
-- Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs ; tests avec `FakeMarketData` (aussi en e2e via `overrideProvider`).
-- Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`).
-- Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`, tests avec `FakeNewsFeed`.
-- Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`, testées sans fakes.
-- Animation uniquement en réponse à une action (navigation, ajout, changement de période), classes de `main.css` (`page-*`, `flash`, `cascade`) ou `<style scoped>`, toujours coupée sous `prefers-reduced-motion` ; page à racine unique (transition de page).
-- Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre ; montants via `utils/format.ts`, gain/perte toujours signé.
-- Tests dans `backend/test/`, `npm run test:cov` à 100 %.
-- Code en anglais, commentaires et textes d'interface en français. Raccourci assumé = commentaire `ponytail:`.
+- Route protégée = `@Authorize()` (guard global `SessionGuard`, 401 sans session), `@CurrentUser()` donne la personne connectée ; sans décorateur, la route est publique. Route publique qui teste un mot de passe = `@RateLimit(...)`.
+- Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs.
+- Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`.
+- Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`) ; toute opération ajoute la valeur à la liste de suivi.
+- Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`.
+
+## Tests (`backend/test/`)
+
+- Jamais de `*.spec.ts` à côté du code ; imports via les alias `@src/*` et `@test/*`.
+- `test/unit/` reproduit l'arborescence de `src/` : service instancié à la main avec les fakes de `test/fakes/` (`InMemoryXxxRepository`, `FakeMarketData`, `FakeNewsFeed`, `FakePasswordHasher`), jamais de mocks ni de `Test.createTestingModule` ; adaptateur HTTP (Yahoo, Google) testé avec `fetch` remplacé (`vi.stubGlobal`).
+- Code de `shared/` avec de la logique (horaires des marchés) : testé dans `test/unit/shared/`.
+- `test/integration/` : adaptateurs Drizzle sur la vraie base ; `test/e2e/` : parcours HTTP complet (supertest), `MarketData` et `NewsFeed` remplacés par leurs fakes (`overrideProvider`) ; données créées avec un email unique et supprimées en `afterAll`.
+- Nouveau repository = son `InMemoryXxxRepository` ; nouveau code = son test dans la couche qui convient, jamais une exclusion de couverture.
+
+## Front
+
+- Composant Nuxt UI (`U*`) d'abord, icônes `i-lucide-*` ; composants rangés par dossier, fichier préfixé par le dossier (`news/NewsList.vue`).
+- Thème clair uniquement (`ui.colorMode: false`), responsive ; libellés Nuxt UI en français (`<UApp :locale="fr">`).
+- Pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; compte via `useAuth()`, appels API via `useApi()`, erreur affichée avec `apiErrorMessage(e)` dans un toast.
+- Formulaire = `FormBuilder` + schéma `@pea/shared`, jamais de `validate` à la main.
+- Action qui retire quelque chose (suppression, arrêt du suivi) = `UModal` de confirmation qui dit ce qui part.
+- Montants via `utils/format.ts` (`money`, `unitMoney` jusqu'à 3 décimales pour un prix de titre, `percent`…), gain/perte toujours signé et coloré par `gainClass`.
+- Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre.
+- Animation uniquement en réponse à une action (navigation, ajout, changement de période), classes de `main.css` (`page-*`, `flash`, `cascade`) ou `<style scoped>` en fin de fichier, toujours coupée sous `prefers-reduced-motion` ; page à racine unique (transition de page).
+
+## Avant de dire « fini » ou de commit
+
+- `README.md` à jour dès qu'un comportement visible change ; nouvelle règle ou convention → ce fichier.
+- `docker compose exec backend npm run test:cov` vert (tests + couverture 100 % des lignes) et `npm run lint` sans erreur.
+- Front modifié = `docker compose exec frontend npm run typecheck` sans erreur, puis vérifié dans le navigateur (le typecheck ne voit pas une erreur de template).
+- Commit en français, une ligne qui dit ce qui change pour l'utilisateur ; dépôt privé `Natolive/PEA`, pas de CI ni de prod.
