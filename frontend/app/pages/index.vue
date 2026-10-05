@@ -95,7 +95,10 @@ const columns: TableColumn<PositionDto>[] = [
 
         <UCard :ui="{ body: 'p-0 sm:p-0' }">
           <template #header>
-            <h2 class="text-highlighted font-semibold">Positions</h2>
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-highlighted font-semibold">Positions</h2>
+              <UButton label="Voir le détail" trailing-icon="i-lucide-arrow-right" color="neutral" variant="ghost" size="sm" to="/positions" />
+            </div>
           </template>
           <UTable :data="data.positions" :columns="columns" class="tabular-nums">
             <template #name-cell="{ row }">

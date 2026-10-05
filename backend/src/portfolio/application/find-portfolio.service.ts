@@ -35,6 +35,10 @@ export class FindPortfolioService {
       dayChange,
       dayChangeRate: value ? dayChange / (value - dayChange) : 0,
       positions: open.map((l) => ({ ...l, weight: l.value / value })).sort((a, b) => b.value - a.value),
+      closed: lines
+        .filter((l) => l.quantity === 0)
+        .map(({ symbol, name, currency, realizedGain }) => ({ symbol, name, currency, realizedGain }))
+        .sort((a, b) => b.realizedGain - a.realizedGain),
       history: portfolioHistory(purchases, histories),
     };
   }

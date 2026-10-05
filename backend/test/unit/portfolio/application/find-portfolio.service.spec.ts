@@ -43,13 +43,21 @@ describe('FindPortfolioService', () => {
     await app.create.execute(lea, { ...purchase, side: 'sell', boughtAt: '2026-01-06', unitPrice: 120, fees: 0 });
     const portfolio = await app.portfolio.execute(lea);
     expect(portfolio).toMatchObject({ value: 0, invested: 0, realizedGain: 198, positions: [] });
+    expect(portfolio.closed).toEqual([{ symbol: 'AI.PA', name: "L'Air Liquide S.A.", currency: 'EUR', realizedGain: 198 }]);
+    // Deuxième ligne soldée, en perte : la plus forte plus-value réalisée reste en tête.
+    await app.create.execute(lea, { ...purchase, asset: 'CW8.PA', boughtAt: '2026-01-05', quantity: 1, unitPrice: 500, fees: 0 });
+    await app.create.execute(lea, { ...purchase, asset: 'CW8.PA', side: 'sell', boughtAt: '2026-01-06', quantity: 1, unitPrice: 400, fees: 0 });
+    expect((await app.portfolio.execute(lea)).closed.map((c) => [c.symbol, c.realizedGain])).toEqual([
+      ['AI.PA', 198],
+      ['CW8.PA', -100],
+    ]);
     // Toujours suivie : sa fiche reste ouverte, sans position.
     expect(await app.asset.execute(lea, 'AI.PA')).toMatchObject({ position: null, purchases: [{ side: 'sell' }, { side: 'buy' }] });
   });
 
   it('is empty without purchases', async () => {
     expect(await setup().portfolio.execute(lea)).toEqual({
-      invested: 0, value: 0, gain: 0, gainRate: 0, realizedGain: 0, dayChange: 0, dayChangeRate: 0, positions: [], history: [],
+      invested: 0, value: 0, gain: 0, gainRate: 0, realizedGain: 0, dayChange: 0, dayChangeRate: 0, positions: [], closed: [], history: [],
     });
   });
 });

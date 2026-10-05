@@ -31,11 +31,22 @@ Pour chaque achat ou vente de son avis d'opéré (le document que le courtier en
 - **Valorisation** au dernier cours, **plus-value latente** depuis les achats, **variation du jour**.
 - **Investi, frais compris** et **plus-values réalisées** par les ventes.
 - **Évolution du portefeuille** : valorisation face au montant investi, jour après jour depuis la première opération (1 mois à tout l'historique).
-- **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance.
+- **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance ; « Voir le détail » mène à la page Positions.
 - **Marchés** : bandeau qui défile en boucle (il s'arrête au survol et se fait glisser à la main) avec Euronext Paris (où s'échangent les actions et ETF européens), Wall Street et les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul) : ouvertes, en pause de midi ou fermées, avec l'heure du prochain changement, jours fériés compris.
 - **Actualités** : bandeau latéral avec les articles récents sur toutes les valeurs suivies.
 
-### 3. Comprendre une valeur — fiche (clic sur son nom)
+### 3. Analyser ses lignes — page « Positions »
+
+Toutes les lignes détenues, de façon technique mais lisible :
+
+- **Synthèse** : valorisation, coût des titres détenus, plus-value latente et réalisée.
+- **Poids dans le portefeuille** : où est l'argent, ligne par ligne, de la plus grosse à la plus petite.
+- **Contribution à la plus-value** : d'où vient la plus-value latente, gains en vert à droite, pertes en rouge à gauche.
+- **Détail des positions** : tableau triable (clic sur un en-tête) avec recherche et filtres (en gain, en perte, haussières, baissières) : PRU, cours et variation du jour, valorisation, poids, plus-value latente et réalisée, tendance, performance sur 1 an, écart à la moyenne 200 séances, volatilité, écart au plus haut sur 52 semaines. Chaque notion technique a une bulle d'aide au survol de son en-tête ; les colonnes secondaires se masquent sur petit écran.
+- **Lignes soldées** : valeurs entièrement vendues et leur plus-value réalisée.
+- **Comment lire cette page** : les notions expliquées en clair (PRU, latent ou réalisé, poids et contribution, moyennes mobiles, volatilité).
+
+### 4. Comprendre une valeur — fiche (clic sur son nom)
 
 - **Cours** sur 1 mois à 5 ans, avec les **moyennes mobiles** sur 50 et 200 séances, ses **opérations** et son **PRU** sur la courbe.
 - **Tendance**, expliquée en une phrase :
@@ -47,11 +58,11 @@ Pour chaque achat ou vente de son avis d'opéré (le document que le courtier en
 - **Sur 52 semaines** : plus haut, plus bas, écart au plus haut et **volatilité** annualisée (au-delà de 30 %, le cours bouge fort).
 - **Actualités** de la valeur, avec ses mots-clés modifiables.
 
-### 4. Surveiller avant d'acheter — page « Suivi »
+### 5. Surveiller avant d'acheter — page « Suivi »
 
 Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, variations sur 1 mois et 1 an, écart au plus haut, tendance, et la même fiche qu'une valeur détenue, sans les montants. Une valeur achetée ou vendue y est ajoutée automatiquement ; « Ne plus suivre » la retire, sans toucher aux opérations.
 
-### 5. Suivre l'actualité qui compte
+### 6. Suivre l'actualité qui compte
 
 - Pour une **action** : l'actualité de l'entreprise.
 - Pour un **ETF** : l'actualité de son marché plutôt que du fonds. Ce sont les résultats des entreprises de l'indice et les décisions des banques centrales qui font bouger le Nasdaq-100, pas les articles sur l'ETF Amundi.
@@ -97,7 +108,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
 - `backend/` — API Nest + Drizzle (Postgres), hexagonale : `src/<domaine>/{domain,application,infrastructure}/`.
   - `auth`, `users` : connexion, sessions, comptes.
   - `purchases` : opérations (achats et ventes ; la table porte le nom d'avant les ventes).
-  - `portfolio` : positions, PRU, plus-values, tendance, historique, en fonctions pures.
+  - `portfolio` : positions et lignes soldées, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
   - `market` : cours et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).

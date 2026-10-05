@@ -16,6 +16,7 @@ async function onLogout() {
 
 const nav = [
   { label: 'Tableau de bord', icon: 'i-lucide-chart-line', to: '/' },
+  { label: 'Positions', icon: 'i-lucide-layers', to: '/positions' },
   { label: 'Opérations', icon: 'i-lucide-receipt-euro', to: '/purchases' },
   { label: 'Suivi', icon: 'i-lucide-eye', to: '/watchlist' },
 ]

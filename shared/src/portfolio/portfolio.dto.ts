@@ -1,3 +1,4 @@
+import type { ClosedPositionDto } from './closed-position.dto.ts'
 import type { PositionDto } from './position.dto.ts'
 
 export interface PortfolioPointDto {
@@ -16,6 +17,8 @@ export interface PortfolioDto {
   dayChange: number
   dayChangeRate: number
   positions: PositionDto[]
+  // Lignes entièrement vendues, la plus forte plus-value réalisée d'abord.
+  closed: ClosedPositionDto[]
   // Valorisation et montant investi, jour après jour depuis le premier achat.
   history: PortfolioPointDto[]
 }
