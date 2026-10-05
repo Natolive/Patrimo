@@ -2,10 +2,16 @@
 @import "@nuxt/ui";
 
 @theme static {
+  --font-display: 'Sora', sans-serif;
   /* Séries des graphiques, dans cet ordre (validées daltonisme et contraste sur fond clair). */
   --color-chart-1: #16a34a;
   --color-chart-2: #2563eb;
   --color-chart-3: #d97706;
+}
+
+/* Titres de page dans la police du logo. */
+@layer base {
+  h1 { font-family: var(--font-display); letter-spacing: -.02em; }
 }
 
 /* Tailwind v4 ne met plus de main sur les boutons : on la remet partout où l'on peut cliquer. */

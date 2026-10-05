@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { PortfolioDto, PositionDto } from '@pea/shared'
+import type { PortfolioDto, PositionDto } from '@patrimo/shared'
 import type { TableColumn } from '@nuxt/ui'
 
-useHead({ title: 'Tableau de bord · PEA' })
+useHead({ title: 'Tableau de bord' })
 
 const api = useApi()
 const { data, error, refresh, status } = await useAsyncData('portfolio', () => api<PortfolioDto>('/portfolio'))
@@ -27,7 +27,7 @@ const columns: TableColumn<PositionDto>[] = [
     <div class="space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon PEA</h1>
+        <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon portefeuille</h1>
         <p class="text-muted mt-1">Cours différés, mis à jour toutes les 10 minutes.</p>
         <MarketClock class="mt-3" />
       </div>
@@ -47,7 +47,7 @@ const columns: TableColumn<PositionDto>[] = [
     <UCard v-else-if="data && !data.positions.length" class="text-center">
       <UIcon name="i-lucide-wallet" class="text-muted mx-auto size-10" />
       <p class="text-highlighted mt-4 font-semibold">Ton portefeuille est vide</p>
-      <p class="text-muted mt-1">Ajoute tes achats Bourse Direct pour suivre leur valeur et leur tendance.</p>
+      <p class="text-muted mt-1">Ajoute tes achats pour suivre leur valeur et leur tendance.</p>
       <p v-if="data.realizedGain" class="mt-2 font-medium tabular-nums" :class="gainClass(data.realizedGain)">{{ signedMoney(data.realizedGain) }} réalisés par tes ventes</p>
       <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" class="mt-6" />
     </UCard>

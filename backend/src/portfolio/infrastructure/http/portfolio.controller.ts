@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import type { AssetDto, PortfolioDto, UserDto } from '@pea/shared';
+import type { AssetDto, PortfolioDto, UserDto } from '@patrimo/shared';
 import { Authorize } from '../../../auth/infrastructure/http/authorize.decorator.js';
 import { CurrentUser } from '../../../auth/infrastructure/http/current-user.decorator.js';
 import { FindAssetService } from '../../application/find-asset.service.js';

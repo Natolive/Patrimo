@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
-import { loginSchema, type LoginDto, type UserDto } from '@pea/shared';
+import { loginSchema, type LoginDto, type UserDto } from '@patrimo/shared';
 import type { Request, Response } from 'express';
 import { ZodValidationPipe } from '../../../common/infrastructure/http/pipes/zod-validation.pipe.js';
 import { RateLimit } from '../../../common/infrastructure/http/rate-limit.decorator.js';

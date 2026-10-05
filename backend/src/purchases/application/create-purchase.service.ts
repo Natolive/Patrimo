@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { PurchaseDto, SavePurchaseDto, UserDto } from '@pea/shared';
+import type { PurchaseDto, SavePurchaseDto, UserDto } from '@patrimo/shared';
 import { AssetNotFoundError } from '../../market/domain/errors/asset-not-found.error.js';
 import { MarketData } from '../../market/domain/market-data.js';
 import { findOversold } from '../../portfolio/domain/holding.js';

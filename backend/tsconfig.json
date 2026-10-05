@@ -15,9 +15,9 @@
     "outDir": "./dist",
     "rootDir": ".",
     "incremental": true,
-    // Garde @pea/shared vu depuis node_modules : tsc le vérifie sans le recompiler dans dist.
+    // Garde @patrimo/shared vu depuis node_modules : tsc le vérifie sans le recompiler dans dist.
     "preserveSymlinks": true,
-    // @pea/shared importe ses fichiers avec l'extension .ts (requis par Node).
+    // @patrimo/shared importe ses fichiers avec l'extension .ts (requis par Node).
     "rewriteRelativeImportExtensions": true,
     "skipLibCheck": true,
     "strict": true,

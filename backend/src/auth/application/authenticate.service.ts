@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserDto } from '@pea/shared';
+import type { UserDto } from '@patrimo/shared';
 import { orThrow } from '../../common/application/or-throw.js';
 import { UserNotFoundError } from '../../users/domain/errors/user-not-found.error.js';
 import { toUserDto } from '../../users/domain/to-user-dto.js';

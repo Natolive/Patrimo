@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { loginSchema, type LoginDto } from '@pea/shared'
+import { loginSchema, type LoginDto } from '@patrimo/shared'
 import type { FormFieldConfig } from '~/types/form'
 
 definePageMeta({ layout: 'auth', guest: true })
-useHead({ title: 'Connexion · PEA' })
+useHead({ title: 'Connexion' })
 
 const state = ref<LoginDto>({ email: '', password: '', remember: true })
 const fields: FormFieldConfig<LoginDto>[] = [
@@ -29,6 +29,7 @@ async function onLogin(data: LoginDto) {
 <template>
   <div>
     <h1 class="text-highlighted text-3xl font-bold tracking-tight">Connexion</h1>
+    <p class="text-muted mt-3">Retrouve ton portefeuille et l’actualité de tes valeurs.</p>
 
     <FormBuilder v-model:state="state" :schema="loginSchema" :fields="fields" :submit="onLogin" submit-label="Se connecter" class="mt-10" />
   </div>

@@ -1,4 +1,4 @@
-import type { PortfolioPointDto } from '@pea/shared';
+import type { PortfolioPointDto } from '@patrimo/shared';
 import type { PricePoint } from '../../market/domain/price-point.entity.js';
 import type { Purchase } from '../../purchases/domain/purchase.entity.js';
 import { applyTrade, chronological, emptyHolding, type Holding } from './holding.js';

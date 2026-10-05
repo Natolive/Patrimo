@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { watchSchema, type SaveWatchDto, type WatchDto } from '@pea/shared'
+import { watchSchema, type SaveWatchDto, type WatchDto } from '@patrimo/shared'
 import type { TableColumn } from '@nuxt/ui'
 import type { FormFieldConfig } from '~/types/form'
 
-useHead({ title: 'Suivi · PEA' })
+useHead({ title: 'Suivi' })
 
 const api = useApi()
 const toast = useToast()

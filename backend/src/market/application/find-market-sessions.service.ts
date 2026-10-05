@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ASIAN_MARKETS, type MarketSessionDto } from '@pea/shared';
+import { ASIAN_MARKETS, type MarketSessionDto } from '@patrimo/shared';
 import { MarketData } from '../domain/market-data.js';
 
 // Séances des places asiatiques ; une place injoignable est simplement omise.

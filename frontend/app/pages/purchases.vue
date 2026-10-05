@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { purchaseSchema, TRADE_SIDE_LABELS, TRADE_SIDES, type PurchaseDto, type PurchaseInput, type SavePurchaseDto } from '@pea/shared'
+import { purchaseSchema, TRADE_SIDE_LABELS, TRADE_SIDES, type PurchaseDto, type PurchaseInput, type SavePurchaseDto } from '@patrimo/shared'
 import type { TableColumn } from '@nuxt/ui'
 import type { FormFieldConfig } from '~/types/form'
 
-useHead({ title: 'Opérations · PEA' })
+useHead({ title: 'Opérations' })
 
 const api = useApi()
 const toast = useToast()
@@ -19,7 +19,7 @@ const fields: FormFieldConfig<PurchaseInput>[] = [
     label: 'Valeur',
     placeholder: 'FR0000120073 ou CW8',
     icon: 'i-lucide-search',
-    help: 'Code ISIN de ton avis d’opéré Bourse Direct, ou mnémonique.',
+    help: 'Code ISIN (sur l’avis d’opéré de ton courtier) ou mnémonique.',
   },
   { name: 'boughtAt', label: 'Date', type: 'date', half: true },
   { name: 'quantity', label: 'Quantité', inputmode: 'decimal', placeholder: '10', half: true },

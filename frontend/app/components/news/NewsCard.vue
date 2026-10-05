@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { updateWatchSchema, type UpdateWatchDto, type UpdateWatchInput, type WatchNewsDto } from '@pea/shared'
+import { updateWatchSchema, type UpdateWatchDto, type UpdateWatchInput, type WatchNewsDto } from '@patrimo/shared'
 import type { FormFieldConfig } from '~/types/form'
 
 // Actualités d'une valeur suivie, cherchées sur ses mots-clés (modifiables).

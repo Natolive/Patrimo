@@ -1,4 +1,4 @@
-import type { QuoteDto } from '@pea/shared';
+import type { QuoteDto } from '@patrimo/shared';
 import type { PricePoint } from '../../market/domain/price-point.entity.js';
 import { analyzeTrend } from './analyze-trend.js';
 

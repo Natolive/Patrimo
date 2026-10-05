@@ -7,7 +7,7 @@ import { MarketUnavailableError } from '../domain/errors/market-unavailable.erro
 
 const BASE = 'https://query2.finance.yahoo.com';
 const CACHE_MS = 10 * 60 * 1000;
-// Valeurs éligibles au PEA : actions et ETF ; Paris d'abord quand un ETF est coté sur plusieurs places.
+// Actions et ETF seulement ; Paris d'abord quand un ETF est coté sur plusieurs places.
 const TYPES = ['EQUITY', 'ETF'];
 
 interface SearchResponse {

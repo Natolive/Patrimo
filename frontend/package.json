@@ -11,7 +11,7 @@
     "typecheck": "nuxi typecheck"
   },
   "dependencies": {
-    "@pea/shared": "*",
+    "@patrimo/shared": "*",
     "@iconify-json/lucide": "^1.2.136",
     "@nuxt/ui": "^4.11.2",
     "nuxt": "^4.5.2",

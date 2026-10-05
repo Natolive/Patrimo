@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { updateWatchSchema, watchSchema, type SaveWatchDto, type FeedItemDto, type UpdateWatchDto, type UserDto, type WatchDto, type WatchNewsDto } from '@pea/shared';
+import { updateWatchSchema, watchSchema, type SaveWatchDto, type FeedItemDto, type UpdateWatchDto, type UserDto, type WatchDto, type WatchNewsDto } from '@patrimo/shared';
 import { Authorize } from '../../../auth/infrastructure/http/authorize.decorator.js';
 import { CurrentUser } from '../../../auth/infrastructure/http/current-user.decorator.js';
 import { ZodValidationPipe } from '../../../common/infrastructure/http/pipes/zod-validation.pipe.js';

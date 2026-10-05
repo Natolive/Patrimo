@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { purchaseSchema, type PurchaseDto, type SavePurchaseDto, type UserDto } from '@pea/shared';
+import { purchaseSchema, type PurchaseDto, type SavePurchaseDto, type UserDto } from '@patrimo/shared';
 import { Authorize } from '../../../auth/infrastructure/http/authorize.decorator.js';
 import { CurrentUser } from '../../../auth/infrastructure/http/current-user.decorator.js';
 import { ZodValidationPipe } from '../../../common/infrastructure/http/pipes/zod-validation.pipe.js';

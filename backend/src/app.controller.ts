@@ -1,5 +1,5 @@
 import { Controller, Get, Inject } from '@nestjs/common';
-import type { HealthDto } from '@pea/shared';
+import type { HealthDto } from '@patrimo/shared';
 import { sql } from 'drizzle-orm';
 import { DB, type Database } from './common/infrastructure/database/database.module.js';
 

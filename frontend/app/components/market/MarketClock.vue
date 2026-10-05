@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ASIAN_MARKETS, MARKETS, marketStatus, sessionStatus, type MarketSessionDto } from '@pea/shared'
+import { ASIAN_MARKETS, MARKETS, marketStatus, sessionStatus, type MarketSessionDto } from '@patrimo/shared'
 
-// Ouverture des places qui comptent pour le PEA, en heure locale du navigateur, recalculée chaque minute :
+// Ouverture des places qui comptent pour un portefeuille européen, en heure locale du navigateur, recalculée chaque minute :
 // Euronext Paris et Wall Street calculés sur place ; places asiatiques (ETF Émergents) d'après la séance lue chez Yahoo.
 const now = ref(new Date())
 const api = useApi()

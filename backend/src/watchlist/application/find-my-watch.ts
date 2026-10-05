@@ -1,4 +1,4 @@
-import type { UserDto } from '@pea/shared';
+import type { UserDto } from '@patrimo/shared';
 import { WatchNotFoundError } from '../domain/errors/watch-not-found.error.js';
 import type { Watch } from '../domain/watch.entity.js';
 import type { WatchRepository } from '../domain/watch.repository.js';

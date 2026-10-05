@@ -1,3 +1,6 @@
+# Projet Docker nommé (indépendant du nom du dossier) : conteneurs, réseau et volume `patrimo_*`.
+name: patrimo
+
 # Une seule image pour l'espace de travail npm (shared + backend + frontend).
 x-app: &app
   build: { context: ., target: dev }
@@ -22,21 +25,21 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`traefik.pea.localhost`)
+      - traefik.http.routers.dashboard.rule=Host(`traefik.patrimo.localhost`)
       - traefik.http.routers.dashboard.service=api@internal
 
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=pea
-      - POSTGRES_PASSWORD=pea
-      - POSTGRES_DB=pea
+      - POSTGRES_USER=patrimo
+      - POSTGRES_PASSWORD=patrimo
+      - POSTGRES_DB=patrimo
     ports:
       - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pea -d pea"]
+      test: ["CMD-SHELL", "pg_isready -U patrimo -d patrimo"]
       interval: 2s
       timeout: 5s
       retries: 15
@@ -49,11 +52,11 @@ services:
       db:
         condition: service_healthy
     environment:
-      - CORS_ORIGIN=http://pea.localhost
-      - DATABASE_URL=postgres://pea:pea@db:5432/pea
+      - CORS_ORIGIN=http://patrimo.localhost
+      - DATABASE_URL=postgres://patrimo:patrimo@db:5432/patrimo
     labels:
       - traefik.enable=true
-      - traefik.http.routers.backend.rule=Host(`api.pea.localhost`)
+      - traefik.http.routers.backend.rule=Host(`api.patrimo.localhost`)
       - traefik.http.services.backend.loadbalancer.server.port=3000
 
   frontend:
@@ -61,10 +64,10 @@ services:
     working_dir: /repo/frontend
     command: npm run dev -- --host 0.0.0.0
     environment:
-      - NUXT_PUBLIC_API_URL=http://api.pea.localhost
+      - NUXT_PUBLIC_API_URL=http://api.patrimo.localhost
     labels:
       - traefik.enable=true
-      - traefik.http.routers.frontend.rule=Host(`pea.localhost`)
+      - traefik.http.routers.frontend.rule=Host(`patrimo.localhost`)
       - traefik.http.services.frontend.loadbalancer.server.port=3000
 
 volumes:

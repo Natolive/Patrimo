@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { createUserSchema } from '@pea/shared';
+import { createUserSchema } from '@patrimo/shared';
 import { ZodValidationPipe } from '@src/common/infrastructure/http/pipes/zod-validation.pipe.js';
 
 describe('ZodValidationPipe', () => {

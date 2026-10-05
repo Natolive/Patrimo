@@ -1,7 +1,7 @@
 import type { CookieOptions, Request, Response } from 'express';
 import type { OpenedSession } from '../../application/opened-session.js';
 
-export const SESSION_COOKIE = 'pea_session';
+export const SESSION_COOKIE = 'patrimo_session';
 
 const baseOptions = (): CookieOptions => ({
   httpOnly: true,

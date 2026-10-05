@@ -1,4 +1,4 @@
-import type { LoginDto, UserDto } from '@pea/shared'
+import type { LoginDto, UserDto } from '@patrimo/shared'
 
 export const useAuth = () => {
   // undefined : session pas encore vérifiée ; null : pas connecté.

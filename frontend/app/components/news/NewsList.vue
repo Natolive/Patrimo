@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FeedItemDto, NewsItemDto } from '@pea/shared'
+import type { FeedItemDto, NewsItemDto } from '@patrimo/shared'
 
 // Liste d'articles du bandeau latéral (accueil et fiche d'une valeur) : logo de l'éditeur, titre, valeurs concernées si connues.
 defineProps<{ items: (NewsItemDto & Partial<Pick<FeedItemDto, 'assets'>>)[] }>()

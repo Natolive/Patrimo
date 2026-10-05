@@ -1,8 +1,8 @@
-# PEA
+# Patrimo
 
-Suivre son Plan d'Épargne en Actions Bourse Direct au même endroit : ce qu'on a acheté et vendu, ce que ça vaut aujourd'hui, la tendance des valeurs détenues ou surveillées et l'actualité qui les fait bouger.
+**Ton portefeuille, en clair.** Suivre son portefeuille d'actions et d'ETF (PEA, compte-titres…) au même endroit, quel que soit le courtier : ce qu'on a acheté et vendu, ce que ça vaut aujourd'hui, la tendance des valeurs détenues ou surveillées et l'actualité qui les fait bouger.
 
-Bourse Direct montre les positions et les opérations, mais pas l'évolution du portefeuille dans le temps, la lecture de tendance des valeurs ni l'actualité de leur marché. PEA les rassemble, à partir des avis d'opéré qu'on saisit soi-même.
+Les courtiers montrent les positions et les opérations, rarement l'évolution du portefeuille dans le temps, une lecture de tendance des valeurs ou l'actualité de leur marché. Patrimo les rassemble, à partir des avis d'opéré qu'on saisit soi-même.
 
 ---
 
@@ -10,7 +10,7 @@ Bourse Direct montre les positions et les opérations, mais pas l'évolution du 
 
 ### 1. Saisir ses opérations — page « Opérations »
 
-Pour chaque achat ou vente de son avis d'opéré :
+Pour chaque achat ou vente de son avis d'opéré (le document que le courtier envoie après chaque ordre exécuté) :
 
 | Champ | Exemple | Remarque |
 |---|---|---|
@@ -23,7 +23,7 @@ Pour chaque achat ou vente de son avis d'opéré :
 
 - Une vente ne peut porter que sur des titres détenus à sa date.
 - Pas de modification : supprimer l'opération puis la ressaisir. Un achat dont dépend une vente ne se supprime qu'après elle.
-- Les virements et les espèces du PEA ne sont pas suivis.
+- Les virements et les espèces du compte ne sont pas suivis.
 
 ### 2. Voir où en est son portefeuille — « Tableau de bord » (accueil)
 
@@ -31,7 +31,7 @@ Pour chaque achat ou vente de son avis d'opéré :
 - **Investi, frais compris** et **plus-values réalisées** par les ventes.
 - **Évolution du portefeuille** : valorisation face au montant investi, jour après jour depuis la première opération (1 mois à tout l'historique).
 - **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance.
-- **Marchés** : Euronext Paris (où s'échangent les ETF du PEA) et Wall Street, ouverts ou fermés, avec l'heure du prochain changement ; en dessous, les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul), pause de midi et jours fériés compris.
+- **Marchés** : Euronext Paris (où s'échangent les actions et ETF européens) et Wall Street, ouverts ou fermés, avec l'heure du prochain changement ; en dessous, les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul), pause de midi et jours fériés compris.
 - **Actualités** : bandeau latéral avec les articles récents sur toutes les valeurs suivies.
 
 ### 3. Comprendre une valeur — fiche (clic sur son nom)
@@ -60,8 +60,8 @@ Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, vari
 ### Bon à savoir
 
 - **Cours différés** (environ 15 minutes), rafraîchis toutes les 10 minutes : pour suivre, pas pour passer un ordre à la seconde.
-- **Prix de revient** au prix moyen pondéré, comme dans un PEA : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
-- **Montants additionnés en euros**, sans conversion de devise (les valeurs d'un PEA sont en euros).
+- **Prix de revient** au prix moyen pondéré, la méthode fiscale française (PEA et compte-titres) : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
+- **Montants additionnés tels quels**, sans conversion de devise : prévu pour un portefeuille en euros (un PEA l'est toujours).
 - **Horaires de marché** : Paris et New York calculés (fuseaux, heure d'été, jours fériés), sans les séances raccourcies des veilles de fêtes. Places asiatiques d'après la séance publiée par Yahoo : un jour férié (ex. Golden Week chinoise) s'affiche « jour férié · dernière séance le … » ; une fois la séance du jour finie, l'ouverture suivante est indiquée « normalement » tant que Yahoo ne l'a pas confirmée.
 - **Rien n'est un conseil d'investissement** : tendances et actualités sont des informations.
 - Appli personnelle : **pas d'inscription**, les comptes se créent en ligne de commande (voir plus bas).
@@ -81,10 +81,10 @@ docker compose exec backend npm run user:create -- <email> <mot de passe> <prén
 
 | Service | Adresse |
 |---|---|
-| Application | http://pea.localhost |
-| API | http://api.pea.localhost (santé : `/health`) |
-| Traefik | http://traefik.pea.localhost (prend le port 80 : arrêter footix avant) |
-| Postgres | `localhost:5433` (pea / pea) |
+| Application | http://patrimo.localhost |
+| API | http://api.patrimo.localhost (santé : `/health`) |
+| Traefik | http://traefik.patrimo.localhost (prend le port 80 : arrêter footix avant) |
+| Postgres | `localhost:5433` (patrimo / patrimo) |
 
 Connexion : session par cookie, « Rester connecté » 30 jours, sinon 12 h et cookie effacé à la fermeture du navigateur ; 10 essais par email en 15 min.
 
@@ -100,7 +100,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
   - `market` : cours et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).
-- `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques en SVG maison.
+- `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques et logo en SVG maison (`components/brand/`), police Sora pour les titres.
 
 ### Sources de données
 

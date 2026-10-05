@@ -1,4 +1,4 @@
-import { ASIAN_MARKETS, sessionStatus } from '@pea/shared';
+import { ASIAN_MARKETS, sessionStatus } from '@patrimo/shared';
 
 const market = (key: string) => ASIAN_MARKETS.find((m) => m.key === key)!;
 const status = (key: string, session: { start: string; end: string; lastSession: string }, now: string) => {

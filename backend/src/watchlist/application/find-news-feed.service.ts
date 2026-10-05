@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { FeedItemDto, UserDto } from '@pea/shared';
+import type { FeedItemDto, UserDto } from '@patrimo/shared';
 import { NewsFeed } from '../../news/domain/news-feed.js';
 import { suggestNewsQuery } from '../../news/domain/suggest-news-query.js';
 import { WatchRepository } from '../domain/watch.repository.js';

@@ -1,4 +1,4 @@
-import type { QuoteDto, WatchDto } from '@pea/shared';
+import type { QuoteDto, WatchDto } from '@patrimo/shared';
 import type { Watch } from './watch.entity.js';
 
 export const toWatchDto = ({ id, symbol, name, currency }: Watch, quote: QuoteDto): WatchDto => ({

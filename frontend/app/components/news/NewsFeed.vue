@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FeedItemDto } from '@pea/shared'
+import type { FeedItemDto } from '@patrimo/shared'
 
 // Fil de l'accueil (bandeau latéral) : actualités de toutes les valeurs suivies, avec les valeurs que chacune concerne.
 // Pas de photo d'article (le flux n'en donne pas) : logo de l'éditeur à la place.

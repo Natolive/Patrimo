@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { LoginDto } from '@pea/shared';
+import type { LoginDto } from '@patrimo/shared';
 import { randomBytes } from 'node:crypto';
 import { UserRepository } from '../../users/domain/user.repository.js';
 import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.error.js';

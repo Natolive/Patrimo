@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserDto, WatchDto } from '@pea/shared';
+import type { UserDto, WatchDto } from '@patrimo/shared';
 import { MarketData } from '../../market/domain/market-data.js';
 import { buildQuote } from '../../portfolio/domain/build-quote.js';
 import { toWatchDto } from '../domain/to-watch-dto.js';

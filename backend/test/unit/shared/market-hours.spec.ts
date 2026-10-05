@@ -1,4 +1,4 @@
-import { MARKETS, marketStatus } from '@pea/shared';
+import { MARKETS, marketStatus } from '@patrimo/shared';
 
 // Heures attendues écrites en UTC : Paris = UTC+2 l'été, UTC+1 l'hiver ; New York = UTC-4 l'été, UTC-5 l'hiver.
 const at = (iso: string) => new Date(iso);

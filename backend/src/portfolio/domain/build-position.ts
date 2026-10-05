@@ -1,4 +1,4 @@
-import type { PositionDto } from '@pea/shared';
+import type { PositionDto } from '@patrimo/shared';
 import type { PricePoint } from '../../market/domain/price-point.entity.js';
 import type { Purchase } from '../../purchases/domain/purchase.entity.js';
 import { buildQuote } from './build-quote.js';

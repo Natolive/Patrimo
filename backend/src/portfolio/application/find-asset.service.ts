@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AssetDto, UserDto } from '@pea/shared';
+import type { AssetDto, UserDto } from '@patrimo/shared';
 import { MarketData } from '../../market/domain/market-data.js';
 import { PurchaseRepository } from '../../purchases/domain/purchase.repository.js';
 import { toPurchaseDto } from '../../purchases/domain/to-purchase-dto.js';

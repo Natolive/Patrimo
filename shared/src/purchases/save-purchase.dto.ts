@@ -2,10 +2,10 @@ import { z } from 'zod'
 import { numberField } from '../common/number.field.ts'
 import { TRADE_SIDES } from './trade-side.ts'
 
-// Opération du relevé Bourse Direct : achat ou vente (le nom « purchase » est resté de la version sans ventes).
+// Opération d'un avis d'opéré : achat ou vente (le nom « purchase » est resté de la version sans ventes).
 export const purchaseSchema = z.object({
   side: z.enum(TRADE_SIDES, 'Choisis achat ou vente.').default('buy'),
-  // Code ISIN (sur l'avis d'opéré Bourse Direct) ou mnémonique : la valeur est retrouvée par l'API.
+  // Code ISIN (sur l'avis d'opéré du courtier) ou mnémonique : la valeur est retrouvée par l'API.
   asset: z.string('Saisis le code ISIN ou le mnémonique.').trim().min(2, 'Saisis le code ISIN (ex. FR0000120073) ou le mnémonique (ex. CW8).').max(40),
   boughtAt: z.iso
     .date('Choisis la date d’achat.')

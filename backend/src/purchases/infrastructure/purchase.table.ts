@@ -1,4 +1,4 @@
-import { TRADE_SIDES } from '@pea/shared';
+import { TRADE_SIDES } from '@patrimo/shared';
 import { date, index, numeric, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../../users/infrastructure/user.table.js';
 

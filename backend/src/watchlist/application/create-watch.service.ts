@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { SaveWatchDto, UserDto, WatchDto } from '@pea/shared';
+import type { SaveWatchDto, UserDto, WatchDto } from '@patrimo/shared';
 import { AssetNotFoundError } from '../../market/domain/errors/asset-not-found.error.js';
 import { MarketData } from '../../market/domain/market-data.js';
 import { buildQuote } from '../../portfolio/domain/build-quote.js';

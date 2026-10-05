@@ -1,4 +1,4 @@
-import type { SavePurchaseDto, UserDto } from '@pea/shared';
+import type { SavePurchaseDto, UserDto } from '@patrimo/shared';
 import { CreatePurchaseService } from '@src/purchases/application/create-purchase.service.js';
 import { DeletePurchaseService } from '@src/purchases/application/delete-purchase.service.js';
 import { FindPurchasesService } from '@src/purchases/application/find-purchases.service.js';

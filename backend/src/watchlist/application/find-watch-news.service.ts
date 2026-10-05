@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserDto, WatchNewsDto } from '@pea/shared';
+import type { UserDto, WatchNewsDto } from '@patrimo/shared';
 import { NewsFeed } from '../../news/domain/news-feed.js';
 import { suggestNewsQuery } from '../../news/domain/suggest-news-query.js';
 import { findMyWatch } from './find-my-watch.js';

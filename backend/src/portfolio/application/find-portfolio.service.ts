@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { PortfolioDto, UserDto } from '@pea/shared';
+import type { PortfolioDto, UserDto } from '@patrimo/shared';
 import { MarketData } from '../../market/domain/market-data.js';
 import { PurchaseRepository } from '../../purchases/domain/purchase.repository.js';
 import { buildPosition } from '../domain/build-position.js';
@@ -7,7 +7,7 @@ import { portfolioHistory } from '../domain/portfolio-history.js';
 
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 
-// ponytail: tous les montants additionnés tels quels, sans conversion de devise (PEA : valeurs en euros).
+// ponytail: tous les montants additionnés tels quels, sans conversion de devise (portefeuille en euros, comme un PEA) ; convertir si des valeurs cotent dans d'autres devises.
 @Injectable()
 export class FindPortfolioService {
   constructor(

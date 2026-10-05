@@ -36,7 +36,7 @@ describe('Auth (e2e)', () => {
     await http.post('/auth/signup').send(account).expect(404);
     await http.post('/auth/login').send({ email: 'nope', password: account.password }).expect(400);
     const first = await http.post('/auth/login').send({ email, password: account.password }).expect(200);
-    expect(first.headers['set-cookie']?.[0]).toMatch(/pea_session=.+HttpOnly/);
+    expect(first.headers['set-cookie']?.[0]).toMatch(/patrimo_session=.+HttpOnly/);
 
     const me = await http.get('/auth/me').expect(200);
     expect(me.body).toEqual({ id: expect.any(String), email, firstName: 'Léa', lastName: 'Dupont' });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TrendSignal } from '@pea/shared'
+import type { TrendSignal } from '@patrimo/shared'
 
 const props = defineProps<{ signal: TrendSignal | null }>()
 

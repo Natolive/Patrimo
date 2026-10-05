@@ -1,6 +1,6 @@
-# PEA — règles projet
+# Patrimo — règles projet
 
-Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendances, actualités). Stack et conventions inspirées de `../footix`, mais seules les règles ci-dessous s'appliquent ici (pas d'inscription, d'emails, de rôles ni de visite guidée).
+Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titres…), quel que soit le courtier : opérations, positions, tendances, actualités. Stack et conventions inspirées de `../footix`, mais seules les règles ci-dessous s'appliquent ici (pas d'inscription, d'emails, de rôles ni de visite guidée).
 
 ## Général
 
@@ -15,7 +15,7 @@ Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendance
 
 - `src/<domaine>/{domain,application,infrastructure}/` + `<domaine>.module.ts`, transverse dans `src/common/`.
 - Un service par route (`application/<action>.service.ts`, une méthode `execute`) ; erreur métier = `domain/errors/<nom>.error.ts`, sous-classe d'une erreur de `common/domain/errors/`, jamais d'exception HTTP.
-- Repository = port qui étend `BaseRepository` + adaptateur qui étend `DrizzleRepository`, liés dans le module ; entité absente = `orThrow(...)` ; body validé par `ZodValidationPipe` avec un schéma `@pea/shared`.
+- Repository = port qui étend `BaseRepository` + adaptateur qui étend `DrizzleRepository`, liés dans le module ; entité absente = `orThrow(...)` ; body validé par `ZodValidationPipe` avec un schéma `@patrimo/shared`.
 - Ressource d'une personne (opération, valeur suivie) : celle d'un autre compte répond comme inexistante (404).
 - Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>` (migrations appliquées au démarrage).
 - Imports relatifs en `.js` (ESM).
@@ -39,9 +39,10 @@ Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendance
 - Composant Nuxt UI (`U*`) d'abord, icônes `i-lucide-*` ; composants rangés par dossier, fichier préfixé par le dossier (`news/NewsList.vue`).
 - Thème clair uniquement (`ui.colorMode: false`), responsive ; libellés Nuxt UI en français (`<UApp :locale="fr">`).
 - Pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; compte via `useAuth()`, appels API via `useApi()`, erreur affichée avec `apiErrorMessage(e)` dans un toast.
-- Formulaire = `FormBuilder` + schéma `@pea/shared`, jamais de `validate` à la main.
+- Formulaire = `FormBuilder` + schéma `@patrimo/shared`, jamais de `validate` à la main.
 - Action qui retire quelque chose (suppression, arrêt du suivi) = `UModal` de confirmation qui dit ce qui part.
 - Montants via `utils/format.ts` (`money`, `unitMoney` jusqu'à 3 décimales pour un prix de titre, `percent`…), gain/perte toujours signé et coloré par `gainClass`.
+- Marque : nom « Patrimo » ; logo = `BrandLogo` (symbole + nom) ou `BrandMark` (symbole seul), `play` pour l'animer à l'affichage (connexion seulement), sinon il s'anime au survol du lien qui le contient ; titres de page en Sora (`font-display`), couleur primaire `emerald` ; nom de l'appli dans les titres d'onglet via `titleTemplate` (`nuxt.config.ts`), une page ne donne que son titre ; aucun courtier nommé dans l'interface ni la doc.
 - Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre.
 - Animation uniquement en réponse à une action (navigation, ajout, changement de période), classes de `main.css` (`page-*`, `flash`, `cascade`) ou `<style scoped>` en fin de fichier, toujours coupée sous `prefers-reduced-motion` ; page à racine unique (transition de page).
 
@@ -68,4 +69,4 @@ Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendance
 - Documentation à jour selon le tableau ci-dessus (un hook le rappelle avant chaque commit et en fin de réponse s'il reste des changements).
 - `docker compose exec backend npm run test:cov` vert (tests + couverture 100 % des lignes) et `npm run lint` sans erreur.
 - Front modifié = `docker compose exec frontend npm run typecheck` sans erreur, puis vérifié dans le navigateur (le typecheck ne voit pas une erreur de template).
-- Commit en français, une ligne qui dit ce qui change pour l'utilisateur ; dépôt privé `Natolive/PEA`, pas de CI ni de prod.
+- Commit en français, une ligne qui dit ce qui change pour l'utilisateur ; dépôt privé `Natolive/Patrimo`, pas de CI ni de prod.

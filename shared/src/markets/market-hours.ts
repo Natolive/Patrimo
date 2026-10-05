@@ -1,4 +1,4 @@
-// Ouverture des places qui comptent pour le PEA, calculée sans API : horaires de la séance, fuseau de la place
+// Ouverture des places qui comptent pour un portefeuille européen, calculée sans API : horaires de la séance, fuseau de la place
 // (heure d'été comprise) et jours fériés. Partagé pour être testé côté back.
 // ponytail: séances raccourcies ignorées (Euronext 24 et 31 décembre à 14 h 05, Wall Street veilles de fêtes à 13 h) ; à ajouter si gênant.
 

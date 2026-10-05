@@ -1,4 +1,4 @@
-import type { PurchaseDto } from '@pea/shared';
+import type { PurchaseDto } from '@patrimo/shared';
 import { purchaseTotal } from './purchase-total.js';
 import type { Purchase } from './purchase.entity.js';
 

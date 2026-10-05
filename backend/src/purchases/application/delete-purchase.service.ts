@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserDto } from '@pea/shared';
+import type { UserDto } from '@patrimo/shared';
 import { findOversold } from '../../portfolio/domain/holding.js';
 import { PurchaseNotFoundError } from '../domain/errors/purchase-not-found.error.js';
 import { SaleLeftUncoveredError } from '../domain/errors/sale-left-uncovered.error.js';

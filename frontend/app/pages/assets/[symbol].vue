@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { TRADE_SIDE_LABELS, type AssetDto, type TrendPeriod } from '@pea/shared'
+import { TRADE_SIDE_LABELS, type AssetDto, type TrendPeriod } from '@patrimo/shared'
 
 const route = useRoute()
 const symbol = computed(() => String(route.params.symbol))
 const api = useApi()
 const { data, error, refresh } = await useAsyncData(`asset:${symbol.value}`, () => api<AssetDto>(`/portfolio/${encodeURIComponent(symbol.value)}`))
-useHead({ title: () => `${data.value?.name ?? symbol.value} · PEA` })
+useHead({ title: () => data.value?.name ?? symbol.value })
 
 const range = ref<RangeLabel>('1A')
 const points = computed(() => inRange(data.value?.points ?? [], range.value))

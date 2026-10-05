@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UpdateWatchDto, UserDto } from '@pea/shared';
+import type { UpdateWatchDto, UserDto } from '@patrimo/shared';
 import { WatchRepository } from '../domain/watch.repository.js';
 import { findMyWatch } from './find-my-watch.js';
 

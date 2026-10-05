@@ -1,4 +1,4 @@
-import type { TradeSide } from '@pea/shared';
+import type { TradeSide } from '@patrimo/shared';
 
 // Opération (achat ou vente) ; le nom date de la version sans ventes.
 export interface Purchase {

@@ -1,4 +1,4 @@
-import type { TrendDto, TrendPeriod, TrendSignal } from '@pea/shared';
+import type { TrendDto, TrendPeriod, TrendSignal } from '@patrimo/shared';
 import type { PricePoint } from '../../market/domain/price-point.entity.js';
 import { movingAverage } from './moving-average.js';
 import { shiftMonths } from './shift-months.js';

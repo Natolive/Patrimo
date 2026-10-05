@@ -33,7 +33,7 @@ const menu = computed<DropdownMenuItem[][]>(() => [
     <header class="bg-default/75 border-default sticky top-0 z-40 border-b backdrop-blur-lg">
       <div class="mx-auto flex h-16 max-w-[96rem] items-center justify-between gap-2 px-4 sm:px-6">
         <div class="flex items-center gap-4 sm:gap-8">
-          <NuxtLink to="/" class="text-primary text-xl font-bold tracking-tight">PEA</NuxtLink>
+          <NuxtLink to="/" class="rounded-md text-xl focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Patrimo, tableau de bord"><BrandLogo /></NuxtLink>
           <UNavigationMenu :items="nav" />
         </div>
         <UDropdownMenu :items="menu">

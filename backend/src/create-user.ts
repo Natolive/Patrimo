@@ -1,4 +1,4 @@
-import { createUserSchema } from '@pea/shared';
+import { createUserSchema } from '@patrimo/shared';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { z } from 'zod';
 import { ScryptPasswordHasher } from './auth/infrastructure/scrypt-password-hasher.js';

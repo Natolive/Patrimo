@@ -1,4 +1,4 @@
-import type { UserDto } from '@pea/shared';
+import type { UserDto } from '@patrimo/shared';
 
 export interface OpenedSession {
   token: string;
