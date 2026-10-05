@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@src/app.module.js';
 import { DB, type Database } from '@src/common/infrastructure/database/database.module.js';
+import { ScryptPasswordHasher } from '@src/auth/infrastructure/scrypt-password-hasher.js';
 import { users } from '@src/users/infrastructure/user.table.js';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
@@ -18,6 +19,9 @@ describe('Auth (e2e)', () => {
     app = moduleRef.createNestApplication();
     await app.init();
     db = app.get(DB);
+    // Pas d'inscription : compte créé comme par `npm run user:create`.
+    const { password, ...rest } = account;
+    await db.insert(users).values({ ...rest, passwordHash: await new ScryptPasswordHasher().hash(password) });
   });
 
   afterAll(async () => {
@@ -25,14 +29,14 @@ describe('Auth (e2e)', () => {
     await app.close();
   });
 
-  it('signs up, reads the profile, logs out, then logs back in', async () => {
+  it('logs in, reads the profile, logs out, then logs back in', async () => {
     const http = request.agent(app.getHttpServer());
 
     await http.get('/auth/me').expect(401);
-    await http.post('/auth/signup').send({ ...account, password: 'court' }).expect(400);
-    const signup = await http.post('/auth/signup').send(account).expect(201);
-    expect(signup.headers['set-cookie']?.[0]).toMatch(/pea_session=.+HttpOnly/);
-    await http.post('/auth/signup').send(account).expect(409);
+    await http.post('/auth/signup').send(account).expect(404);
+    await http.post('/auth/login').send({ email: 'nope', password: account.password }).expect(400);
+    const first = await http.post('/auth/login').send({ email, password: account.password }).expect(200);
+    expect(first.headers['set-cookie']?.[0]).toMatch(/pea_session=.+HttpOnly/);
 
     const me = await http.get('/auth/me').expect(200);
     expect(me.body).toEqual({ id: expect.any(String), email, firstName: 'Léa', lastName: 'Dupont' });

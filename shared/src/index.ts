@@ -3,6 +3,6 @@
 export * from './common/email.field.ts'
 export * from './common/new-password.field.ts'
 export * from './auth/login.dto.ts'
-export * from './auth/signup.dto.ts'
+export * from './users/create-user.dto.ts'
 export * from './users/user.dto.ts'
 export * from './health/health.dto.ts'

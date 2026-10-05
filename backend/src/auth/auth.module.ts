@@ -5,7 +5,6 @@ import { AuthenticateService } from './application/authenticate.service.js';
 import { LoginService } from './application/login.service.js';
 import { LogoutService } from './application/logout.service.js';
 import { OpenSessionService } from './application/open-session.service.js';
-import { SignupService } from './application/signup.service.js';
 import { PasswordHasher } from './domain/password-hasher.js';
 import { SessionRepository } from './domain/session.repository.js';
 import { DrizzleSessionRepository } from './infrastructure/drizzle-session.repository.js';
@@ -21,7 +20,6 @@ import { ScryptPasswordHasher } from './infrastructure/scrypt-password-hasher.js
     LoginService,
     LogoutService,
     OpenSessionService,
-    SignupService,
     // Global : `@Authorize()` suffit sur une route de n'importe quel module.
     { provide: APP_GUARD, useClass: SessionGuard },
     { provide: PasswordHasher, useClass: ScryptPasswordHasher },

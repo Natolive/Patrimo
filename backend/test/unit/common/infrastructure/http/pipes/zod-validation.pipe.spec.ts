@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
-import { signupSchema } from '@pea/shared';
+import { createUserSchema } from '@pea/shared';
 import { ZodValidationPipe } from '@src/common/infrastructure/http/pipes/zod-validation.pipe.js';
 
 describe('ZodValidationPipe', () => {
-  const pipe = new ZodValidationPipe(signupSchema);
+  const pipe = new ZodValidationPipe(createUserSchema);
 
   it('returns the parsed body', () => {
     const body = { lastName: ' Dupont ', firstName: 'Léa', email: 'Lea@Example.com', password: '12345678' };

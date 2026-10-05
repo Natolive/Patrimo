@@ -31,10 +31,5 @@ async function onLogin(data: LoginDto) {
     <h1 class="text-highlighted text-3xl font-bold tracking-tight">Connexion</h1>
 
     <FormBuilder v-model:state="state" :schema="loginSchema" :fields="fields" :submit="onLogin" submit-label="Se connecter" class="mt-10" />
-
-    <p class="text-muted mt-8 text-sm">
-      Pas encore de compte ?
-      <ULink to="/signup" class="text-primary font-medium">Créer un compte</ULink>
-    </p>
   </div>
 </template>

@@ -8,6 +8,23 @@ x-app: &app
     - /repo/frontend/node_modules
 
 services:
+  traefik:
+    image: traefik:latest
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --api.dashboard=true
+      - --accesslog=true
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.pea.localhost`)
+      - traefik.http.routers.dashboard.service=api@internal
+
   db:
     image: postgres:latest
     environment:
@@ -32,19 +49,23 @@ services:
       db:
         condition: service_healthy
     environment:
-      - CORS_ORIGIN=http://localhost:3010
+      - CORS_ORIGIN=http://pea.localhost
       - DATABASE_URL=postgres://pea:pea@db:5432/pea
-    ports:
-      - "3011:3000"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=Host(`api.pea.localhost`)
+      - traefik.http.services.backend.loadbalancer.server.port=3000
 
   frontend:
     <<: *app
     working_dir: /repo/frontend
     command: npm run dev -- --host 0.0.0.0
     environment:
-      - NUXT_PUBLIC_API_URL=http://localhost:3011
-    ports:
-      - "3010:3000"
+      - NUXT_PUBLIC_API_URL=http://api.pea.localhost
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host(`pea.localhost`)
+      - traefik.http.services.frontend.loadbalancer.server.port=3000
 
 volumes:
   db-data:
