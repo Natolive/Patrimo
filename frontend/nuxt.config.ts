@@ -10,7 +10,11 @@ export default defineNuxtConfig({
     head: {
       titleTemplate: '%s · Patrimo',
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-      meta: [{ name: 'theme-color', content: '#062019' }],
+      // viewport-fit=cover : la barre d'onglets mobile peut tenir compte de la zone de geste (safe-area).
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'theme-color', content: '#062019' },
+      ],
     },
   },
   modules: ['@nuxt/ui'],

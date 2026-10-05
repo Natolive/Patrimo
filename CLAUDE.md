@@ -40,6 +40,7 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 ## Front
 
 - Composant Nuxt UI (`U*`) d'abord, icônes `i-lucide-*` ; composants rangés par dossier, fichier préfixé par le dossier (`news/NewsList.vue`).
+- Navigation = tableau `nav` de `layouts/default.vue` (menu en haut à partir de `lg`, barre d'onglets en bas en dessous, avec `short` pour le libellé court) ; nouvelle section = une entrée dans ce tableau. Grille de page en une colonne sous un breakpoint = `grid-cols-[minmax(0,1fr)]` (sinon un contenu large, comme le bandeau des marchés, élargit la page). Vérifier une page à 390 px et 820 px avant de dire « fini ».
 - Thème clair uniquement (`ui.colorMode: false`), responsive ; libellés Nuxt UI en français (`<UApp :locale="fr">`).
 - Pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; compte via `useAuth()`, appels API via `useApi()`, erreur affichée avec `apiErrorMessage(e)` dans un toast.
 - Formulaire = `FormBuilder` + schéma `@patrimo/shared`, jamais de `validate` à la main.

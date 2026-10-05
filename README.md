@@ -86,6 +86,7 @@ Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, vari
 - **Prix de revient** au prix moyen pondéré, la méthode fiscale française (PEA et compte-titres) : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
 - **Montants additionnés tels quels**, sans conversion de devise : prévu pour un portefeuille en euros (un PEA l'est toujours).
 - **Horaires de marché** : Paris et New York calculés (fuseaux, heure d'été, jours fériés), sans les séances raccourcies des veilles de fêtes. Places asiatiques d'après la séance publiée par Yahoo : un jour férié (ex. Golden Week chinoise) s'affiche « jour férié · dernière séance le … » ; une fois la séance du jour finie, l'ouverture suivante est indiquée « normalement » tant que Yahoo ne l'a pas confirmée.
+- **Sur téléphone et tablette** : les sections passent dans une barre d'onglets en bas de l'écran (Accueil, Positions, Opérations, Suivi), le compte reste en haut à droite ; les tableaux masquent leurs colonnes secondaires.
 - **Rien n'est un conseil d'investissement** : tendances et actualités sont des informations.
 - Appli personnelle : **pas d'inscription**, les comptes se créent en ligne de commande (voir plus bas).
 

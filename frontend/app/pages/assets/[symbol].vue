@@ -38,7 +38,7 @@ const reading = computed(() => {
 </script>
 
 <template>
-  <div class="grid items-start gap-6" :class="{ 'xl:grid-cols-[minmax(0,1fr)_22rem]': data?.watchId }">
+  <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-6" :class="{ 'xl:grid-cols-[minmax(0,1fr)_22rem]': data?.watchId }">
     <div class="space-y-6">
       <UButton label="Retour" icon="i-lucide-arrow-left" color="neutral" variant="link" class="-ml-2.5" @click="$router.back()" />
 

@@ -23,7 +23,7 @@ const columns: TableColumn<PositionDto>[] = [
 </script>
 
 <template>
-  <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+  <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
     <div class="space-y-6">
       <div>
         <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon portefeuille</h1>
