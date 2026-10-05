@@ -25,6 +25,7 @@ const fullName = computed(() => `${user.value?.firstName ?? ''} ${user.value?.la
 
 const menu = computed<DropdownMenuItem[][]>(() => [
   [{ type: 'label', label: fullName.value, description: user.value?.email }],
+  [{ label: 'Mon profil', icon: 'i-lucide-user-round', to: '/profile' }],
   [{ label: 'Se déconnecter', icon: 'i-lucide-log-out', color: 'error', onSelect: onLogout }],
 ])
 </script>

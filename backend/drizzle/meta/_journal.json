@@ -36,6 +36,13 @@
       "when": 1791215411393,
       "tag": "0004_add_watch_news_query",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791236864600,
+      "tag": "0005_add_two_factor",
+      "breakpoints": true
     }
   ]
 }

@@ -4,5 +4,8 @@ export interface User {
   firstName: string;
   lastName: string;
   passwordHash: string;
+  totpSecret: string | null;
+  twoFactorEnabledAt: Date | null;
+  recoveryCodeHashes: string[];
   createdAt: Date;
 }

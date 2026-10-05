@@ -69,6 +69,17 @@ Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, vari
 - Mots-clés proposés selon la valeur, modifiables sur sa fiche (`OR` pour l'un ou l'autre, guillemets pour une expression exacte ; vide = revenir à la suggestion).
 - Titres et liens vers les articles (Boursorama, Les Echos, Zonebourse…), en français, des 14 derniers jours.
 
+### 7. Gérer son compte — page « Mon profil » (menu du compte, en haut à droite)
+
+- **Informations** : prénom et nom (l'email sert d'identifiant et ne change pas).
+- **Mot de passe** : le changer demande le mot de passe actuel et déconnecte les autres appareils.
+- **Double authentification (2FA)**, recommandée : en plus du mot de passe, un code à 6 chiffres d'une application d'authentification (Google Authenticator, 1Password, Authy…).
+  1. « Activer la double authentification » affiche un QR code (et la clé, à saisir à la main si besoin).
+  2. Scanner, puis saisir le code affiché par l'application pour confirmer.
+  3. Noter les 8 **codes de secours** (copier ou télécharger) : affichés une seule fois, chacun remplace le téléphone pour une connexion.
+- **Connexion avec la 2FA** : après le mot de passe, une étape « Vérification » demande le code de l'application ou un code de secours ; elle expire au bout de 5 minutes ou 5 essais (retour au mot de passe).
+- **Désactiver la 2FA** : mot de passe et code demandés.
+
 ### Bon à savoir
 
 - **Cours différés** (environ 15 minutes), rafraîchis toutes les 10 minutes : pour suivre, pas pour passer un ordre à la seconde.
@@ -98,7 +109,7 @@ docker compose exec backend npm run user:create -- <email> <mot de passe> <prén
 | Traefik | http://traefik.patrimo.localhost (prend le port 80 : arrêter footix avant) |
 | Postgres | `localhost:5433` (patrimo / patrimo) |
 
-Connexion : session par cookie, « Rester connecté » 30 jours, sinon 12 h et cookie effacé à la fermeture du navigateur ; 10 essais par email en 15 min.
+Connexion : session par cookie, « Rester connecté » 30 jours, sinon 12 h et cookie effacé à la fermeture du navigateur ; 10 essais par email en 15 min. 2FA : TOTP standard (RFC 6238, 6 chiffres, 30 s) calculé dans `backend/src/auth/application/totp.ts`, clé en base, codes de secours hachés, vérification en attente gardée en mémoire 5 min (5 essais) ; QR code dessiné dans le navigateur (`uqr`).
 
 ### Architecture
 
@@ -106,7 +117,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
 
 - `shared/` — schémas Zod partagés (la même règle valide le formulaire et l'API), types des réponses, calcul des horaires de marché.
 - `backend/` — API Nest + Drizzle (Postgres), hexagonale : `src/<domaine>/{domain,application,infrastructure}/`.
-  - `auth`, `users` : connexion, sessions, comptes.
+  - `auth`, `users` : connexion (avec 2FA), sessions, profil, mot de passe, comptes.
   - `purchases` : opérations (achats et ventes ; la table porte le nom d'avant les ventes).
   - `portfolio` : positions et lignes soldées, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.

@@ -6,6 +6,7 @@ import { InvalidCredentialsError } from '../domain/errors/invalid-credentials.er
 import { PasswordHasher } from '../domain/password-hasher.js';
 import { OpenSessionService } from './open-session.service.js';
 import type { OpenedSession } from './opened-session.js';
+import { TwoFactorChallenges } from './two-factor-challenges.js';
 
 @Injectable()
 export class LoginService {
@@ -15,14 +16,17 @@ export class LoginService {
     private readonly users: UserRepository,
     private readonly hasher: PasswordHasher,
     private readonly openSession: OpenSessionService,
+    private readonly challenges: TwoFactorChallenges,
   ) {}
 
-  async execute({ email, password, remember = false }: LoginDto): Promise<OpenedSession> {
+  // Session ouverte, ou jeton à renvoyer avec le code 2FA si elle est active.
+  async execute({ email, password, remember = false }: LoginDto): Promise<OpenedSession | { challenge: string }> {
     const user = await this.users.findByEmail(email);
     // Email inconnu : on vérifie quand même un hash pour que le temps de réponse ne trahisse pas l'existence du compte.
     this.dummyHash ??= this.hasher.hash(randomBytes(16).toString('hex'));
     const valid = await this.hasher.verify(password, user?.passwordHash ?? (await this.dummyHash));
     if (!user || !valid) throw new InvalidCredentialsError();
+    if (user.twoFactorEnabledAt) return { challenge: this.challenges.issue(user.id, remember) };
     return this.openSession.execute(user, remember);
   }
 }

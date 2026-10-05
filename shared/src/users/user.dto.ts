@@ -4,4 +4,6 @@ export interface UserDto {
   email: string
   firstName: string
   lastName: string
+  // Double authentification active : un code est demandé à la connexion.
+  twoFactorEnabled: boolean
 }
