@@ -1,4 +1,5 @@
-FROM node:alpine AS dev
+# Versions fixées (mise à jour volontaire : changer ici et dans docker-compose*.yml).
+FROM node:26.10.0-alpine3.24 AS dev
 WORKDIR /repo
 COPY . .
 RUN npm ci

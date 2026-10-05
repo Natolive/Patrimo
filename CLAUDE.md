@@ -5,6 +5,8 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 ## Général
 
 - Tout passe par Docker (`docker compose exec <backend|frontend> ...`), jamais `npm` sur l'hôte (Node trop ancien).
+- Versions toutes fixées : dépendances npm exactes (`.npmrc` `save-exact=true`, jamais de `^` ni `~`), images Docker à l'étiquette exacte (`Dockerfile`, `docker-compose.yml`), jamais `latest`. Mise à jour = volontaire : changer la version, régénérer le lockfile, `docker compose up -d --build -V`, puis tests, lint, typecheck, builds et navigateur.
+- TypeScript reste en 6.x tant que la 7 n'a pas d'API de compilation (attendue en 7.1) : Nest CLI et `vue-tsc` en ont besoin.
 - Workspace npm : `shared/` (DTO Zod et code commun), `backend/` (Nest + Drizzle, hexagonal), `frontend/` (Nuxt UI), un seul lockfile à la racine.
 - Un DTO = `shared/src/<domaine>/<nom>.dto.ts`, réexporté dans `shared/src/index.ts` ; dans `shared/` : imports relatifs en `.ts`, pas d'`enum`/`namespace` (chargé sans compilation).
 - La validation vit uniquement dans le schéma partagé, messages en français qui disent comment corriger.

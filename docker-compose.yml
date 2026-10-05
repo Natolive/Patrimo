@@ -12,7 +12,7 @@ x-app: &app
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v3.7.13
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
@@ -29,7 +29,7 @@ services:
       - traefik.http.routers.dashboard.service=api@internal
 
   db:
-    image: postgres:latest
+    image: postgres:18.6
     environment:
       - POSTGRES_USER=patrimo
       - POSTGRES_PASSWORD=patrimo

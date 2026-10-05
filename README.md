@@ -135,4 +135,6 @@ docker compose exec frontend npm run typecheck
 docker compose exec backend npm run db:generate -- --name <nom>   # après un changement de table (migrations appliquées au démarrage)
 ```
 
+Versions fixées partout (Node 26.10.0, Postgres 18.6, Traefik 3.7.13, dépendances npm exactes) : une mise à jour est un changement volontaire, suivi de `docker compose up -d --build -V` et de toutes les vérifications ci-dessus.
+
 Règles de code, de tests et checklist avant commit : [`CLAUDE.md`](CLAUDE.md).
