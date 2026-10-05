@@ -14,9 +14,13 @@ const fields: FormFieldConfig<SaveWatchDto>[] = [
   { name: 'asset', label: 'Valeur', placeholder: 'FR0000121014 ou MC', icon: 'i-lucide-search', help: 'Code ISIN ou mnémonique d’une action ou d’un ETF.' },
 ]
 
+// Dernière valeur suivie, surlignée dans la liste.
+const added = ref<string>()
+
 async function follow(dto: SaveWatchDto) {
   try {
     const watch = await api<WatchDto>('/watches', { method: 'POST', body: dto })
+    added.value = watch.id
     toast.add({ title: 'Valeur suivie', description: watch.name, color: 'success', icon: 'i-lucide-check' })
   } catch (e) {
     toast.add({ title: 'Suivi impossible', description: apiErrorMessage(e), color: 'error', icon: 'i-lucide-circle-alert' })
@@ -75,7 +79,12 @@ const columns: TableColumn<WatchDto>[] = [
         :description="apiErrorMessage(error)"
         class="m-4 w-auto"
       />
-      <UTable v-else :data="watches ?? []" :columns="columns" class="tabular-nums" empty="Aucune valeur suivie : ajoute-en une avec son code ISIN.">
+      <UTable
+        v-else
+        :data="watches ?? []"
+        :columns="columns"
+        :meta="{ class: { tr: (row) => (row.original.id === added ? 'flash' : '') } }"
+        class="tabular-nums" empty="Aucune valeur suivie : ajoute-en une avec son code ISIN.">
         <template #name-cell="{ row }">
           <NuxtLink :to="`/assets/${encodeURIComponent(row.original.symbol)}`" class="group block max-w-56">
             <span class="text-highlighted block truncate font-medium group-hover:text-primary">{{ row.original.name }}</span>

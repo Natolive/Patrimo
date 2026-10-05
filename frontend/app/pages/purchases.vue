@@ -27,9 +27,13 @@ const fields: FormFieldConfig<PurchaseInput>[] = [
   { name: 'fees', label: 'Frais (€)', inputmode: 'decimal', placeholder: '1,99', help: 'Courtage, TTF…', half: true },
 ]
 
+// Dernière opération ajoutée, surlignée dans la liste.
+const added = ref<string>()
+
 async function add(dto: SavePurchaseDto) {
   try {
     const purchase = await api<PurchaseDto>('/purchases', { method: 'POST', body: dto })
+    added.value = purchase.id
     toast.add({
       title: `${TRADE_SIDE_LABELS[purchase.side]} ajouté${purchase.side === 'sell' ? 'e' : ''}`,
       description: `${quantity(purchase.quantity)} × ${purchase.name}`,
@@ -84,7 +88,11 @@ const columns: TableColumn<PurchaseDto>[] = [
       <template #header>
         <h2 class="text-highlighted font-semibold">Mes opérations</h2>
       </template>
-      <UTable :data="purchases ?? []" :columns="columns" class="tabular-nums" empty="Aucune opération pour l’instant : ajoute ton premier achat avec le formulaire.">
+      <UTable
+        :data="purchases ?? []"
+        :columns="columns"
+        :meta="{ class: { tr: (row) => (row.original.id === added ? 'flash' : '') } }"
+        class="tabular-nums" empty="Aucune opération pour l’instant : ajoute ton premier achat avec le formulaire.">
         <template #boughtAt-cell="{ row }">{{ shortDate(row.original.boughtAt) }}</template>
         <template #side-cell="{ row }">
           <UBadge

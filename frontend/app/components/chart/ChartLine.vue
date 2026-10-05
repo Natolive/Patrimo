@@ -142,7 +142,9 @@ const tooltip = computed(() => {
 
       <path
         v-for="s in [...series].reverse()"
-        :key="s.key"
+        :key="`${s.key}-${dates[0]}-${dates.length}`"
+        class="draw"
+        pathLength="1"
         :d="path(s.values)"
         fill="none"
         :stroke="s.color"
@@ -163,7 +165,7 @@ const tooltip = computed(() => {
 
     <div
       v-if="tooltip"
-      class="pointer-events-none absolute top-8 z-10 min-w-44 rounded-md border border-default bg-default p-3 text-sm shadow-lg"
+      class="tooltip pointer-events-none absolute top-8 z-10 min-w-44 rounded-md border border-default bg-default p-3 text-sm shadow-lg"
       :style="tooltip.flip ? { right: `${width - tooltip.left + 12}px` } : { left: `${tooltip.left + 12}px` }"
     >
       <p class="text-muted mb-2">{{ tooltip.date }}</p>
@@ -178,3 +180,26 @@ const tooltip = computed(() => {
     </div>
   </figure>
 </template>
+
+<style scoped>
+/* Courbe qui se trace de gauche à droite à l'affichage et au changement de période. */
+.draw {
+  stroke-dasharray: 1;
+  animation: draw .7s cubic-bezier(.4, 0, .2, 1) both;
+}
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+.tooltip {
+  animation: fade .12s ease-out;
+}
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw, .tooltip { animation: none; }
+}
+</style>

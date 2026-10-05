@@ -11,7 +11,7 @@ const logo = (domain: string) => `https://www.google.com/s2/favicons?domain=${en
 
 <template>
   <ul class="divide-default divide-y">
-    <li v-for="item in items" :key="item.url" class="p-4">
+    <li v-for="(item, i) in items" :key="item.url" class="cascade p-4" :style="{ '--i': i }">
       <p class="text-muted flex items-center gap-2 text-xs">
         <img v-if="item.sourceDomain" :src="logo(item.sourceDomain)" alt="" width="16" height="16" class="size-4 rounded-sm" loading="lazy">
         <UIcon v-else name="i-lucide-newspaper" class="size-4" />

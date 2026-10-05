@@ -16,6 +16,7 @@ Stack et conventions reprises de `../footix` (son `CLAUDE.md`, `backend/CLAUDE.m
 - Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`).
 - Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`, tests avec `FakeNewsFeed`.
 - Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`, testées sans fakes.
+- Animation uniquement en réponse à une action (navigation, ajout, changement de période), classes de `main.css` (`page-*`, `flash`, `cascade`) ou `<style scoped>`, toujours coupée sous `prefers-reduced-motion` ; page à racine unique (transition de page).
 - Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre ; montants via `utils/format.ts`, gain/perte toujours signé.
 - Tests dans `backend/test/`, `npm run test:cov` à 100 %.
 - Code en anglais, commentaires et textes d'interface en français. Raccourci assumé = commentaire `ponytail:`.
