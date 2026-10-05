@@ -2,7 +2,7 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-display: 'Sora', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
   /* Séries des graphiques, dans cet ordre (validées daltonisme et contraste sur fond clair). */
   --color-chart-1: #16a34a;
   --color-chart-2: #2563eb;

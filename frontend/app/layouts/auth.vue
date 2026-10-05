@@ -8,7 +8,7 @@
         <h2 class="font-display text-5xl leading-[1.05] font-bold tracking-tight xl:text-6xl">Ton portefeuille,<br>en clair.</h2>
         <p class="mt-6 max-w-sm text-lg text-white/75">Opérations, plus-values, tendances et actualités de tes valeurs, au même endroit.</p>
       </div>
-      <!-- Courbe décorative qui se trace à l'arrivée sur la page. -->
+      <!-- Graphique décoratif (ligne brisée, comme un cours) qui se trace à l'arrivée sur la page. -->
       <svg viewBox="0 0 600 180" class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 w-full opacity-60" aria-hidden="true">
         <defs>
           <linearGradient id="brand-area" x1="0" y1="0" x2="0" y2="1">
@@ -16,8 +16,8 @@
             <stop offset="1" stop-color="#6ee7b7" stop-opacity="0" />
           </linearGradient>
         </defs>
-        <path class="area" d="M0 150 C60 140 90 120 140 126 S220 96 270 104 S350 60 400 70 S480 30 530 34 S580 14 600 10 V180 H0Z" fill="url(#brand-area)" />
-        <path class="line" d="M0 150 C60 140 90 120 140 126 S220 96 270 104 S350 60 400 70 S480 30 530 34 S580 14 600 10" fill="none" stroke="#a7f3d0" stroke-width="3" stroke-linecap="round" pathLength="1" />
+        <path class="area" d="M0 152 L40 146 L70 150 L110 132 L140 138 L180 118 L210 124 L250 100 L280 108 L320 84 L350 92 L390 66 L420 74 L460 50 L490 58 L530 34 L560 40 L600 12 V180 H0Z" fill="url(#brand-area)" />
+        <path class="line" d="M0 152 L40 146 L70 150 L110 132 L140 138 L180 118 L210 124 L250 100 L280 108 L320 84 L350 92 L390 66 L420 74 L460 50 L490 58 L530 34 L560 40 L600 12" fill="none" stroke="#6ee7b7" stroke-width="2.5" stroke-linejoin="miter" pathLength="1" />
       </svg>
     </section>
 
@@ -31,11 +31,13 @@
 </template>
 
 <style scoped>
-/* Fond de marque : émeraude profond, plus clair en haut à gauche. */
+/* Fond de marque : la tuile du logo, quadrillage discret et lueur émeraude en haut à gauche. */
 .brand-panel {
   background:
-    radial-gradient(70% 60% at 15% 10%, #059669 0%, transparent 70%),
-    linear-gradient(160deg, #064e3b, #022c22);
+    radial-gradient(60% 50% at 10% 0%, rgb(16 185 129 / .35), transparent 70%),
+    linear-gradient(rgb(52 211 153 / .06) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgb(52 211 153 / .06) 1px, transparent 1px) 0 0 / 48px 48px,
+    #03140f;
 }
 
 .line {

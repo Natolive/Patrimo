@@ -100,7 +100,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
   - `market` : cours et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).
-- `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques et logo en SVG maison (`components/brand/`), police Sora pour les titres.
+- `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques et logo en SVG maison (`components/brand/`), police Space Grotesk pour les titres.
 
 ### Sources de données
 

@@ -10,15 +10,15 @@ export default defineNuxtConfig({
     head: {
       titleTemplate: '%s · Patrimo',
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-      meta: [{ name: 'theme-color', content: '#059669' }],
+      meta: [{ name: 'theme-color', content: '#062019' }],
     },
   },
   modules: ['@nuxt/ui'],
   // Thème clair uniquement : la palette des graphiques est validée sur fond clair.
   ui: { colorMode: false },
   css: ['~/assets/css/main.css'],
-  // Sora (géométrique, style fintech) pour le nom et les titres ; texte courant dans la police de Nuxt UI.
-  fonts: { families: [{ name: 'Sora', provider: 'google', weights: [600, 700] }] },
+  // Space Grotesk (géométrique, technique) pour le nom et les titres ; texte courant dans la police de Nuxt UI.
+  fonts: { families: [{ name: 'Space Grotesk', provider: 'google', weights: [600, 700] }] },
   runtimeConfig: {
     public: { apiUrl: '' },
   },
