@@ -77,7 +77,8 @@ const columns: TableColumn<PurchaseDto>[] = [
 
 <template>
   <div class="grid items-start gap-6 lg:grid-cols-[22rem_1fr]">
-    <UCard>
+    <!-- Formulaire collé en haut de l'écran pendant le défilement de la liste (grand écran). -->
+    <UCard class="lg:sticky lg:top-22">
       <template #header>
         <h1 class="text-highlighted font-semibold">Ajouter une opération</h1>
       </template>
