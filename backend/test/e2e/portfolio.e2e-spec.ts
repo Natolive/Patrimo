@@ -39,7 +39,9 @@ describe('Portfolio (e2e)', () => {
     const http = request.agent(app.getHttpServer());
     await http.get('/purchases').expect(401);
     await http.get('/portfolio').expect(401);
+    await http.get('/markets/sessions').expect(401);
     await http.post('/auth/login').send({ email, password: '12345678' }).expect(200);
+    expect((await http.get('/markets/sessions').expect(200)).body).toEqual([{ key: 'hongKong', start: '2026-10-06T01:30:00.000Z', end: '2026-10-06T08:10:00.000Z', lastSession: '2026-10-05' }]);
 
     await http.post('/purchases').send({ asset: 'FR0000120073', boughtAt: '2026-01-02', quantity: 'abc', unitPrice: '100', fees: '0' }).expect(400);
     await http.post('/purchases').send({ asset: 'NOPE', boughtAt: '2026-01-02', quantity: '1', unitPrice: '100', fees: '0' }).expect(404);

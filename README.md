@@ -31,7 +31,7 @@ Pour chaque achat ou vente de son avis d'opéré :
 - **Investi, frais compris** et **plus-values réalisées** par les ventes.
 - **Évolution du portefeuille** : valorisation face au montant investi, jour après jour depuis la première opération (1 mois à tout l'historique).
 - **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance.
-- **Marchés** : Euronext Paris (où s'échangent les ETF du PEA) et Wall Street, ouverts ou fermés, avec l'heure du prochain changement.
+- **Marchés** : Euronext Paris (où s'échangent les ETF du PEA) et Wall Street, ouverts ou fermés, avec l'heure du prochain changement ; en dessous, les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul), pause de midi et jours fériés compris.
 - **Actualités** : bandeau latéral avec les articles récents sur toutes les valeurs suivies.
 
 ### 3. Comprendre une valeur — fiche (clic sur son nom)
@@ -62,7 +62,7 @@ Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, vari
 - **Cours différés** (environ 15 minutes), rafraîchis toutes les 10 minutes : pour suivre, pas pour passer un ordre à la seconde.
 - **Prix de revient** au prix moyen pondéré, comme dans un PEA : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
 - **Montants additionnés en euros**, sans conversion de devise (les valeurs d'un PEA sont en euros).
-- **Horaires de marché** calculés (fuseaux, heure d'été, jours fériés), sans les séances raccourcies des veilles de fêtes.
+- **Horaires de marché** : Paris et New York calculés (fuseaux, heure d'été, jours fériés), sans les séances raccourcies des veilles de fêtes. Places asiatiques d'après la séance publiée par Yahoo : un jour férié (ex. Golden Week chinoise) s'affiche « jour férié · dernière séance le … » ; une fois la séance du jour finie, l'ouverture suivante est indiquée « normalement » tant que Yahoo ne l'a pas confirmée.
 - **Rien n'est un conseil d'investissement** : tendances et actualités sont des informations.
 - Appli personnelle : **pas d'inscription**, les comptes se créent en ligne de commande (voir plus bas).
 
@@ -98,7 +98,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
   - `purchases` : opérations (achats et ventes ; la table porte le nom d'avant les ventes).
   - `portfolio` : positions, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
-  - `market` : cours (port `MarketData`, adaptateur Yahoo Finance).
+  - `market` : cours et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).
 - `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques en SVG maison.
 
@@ -109,7 +109,8 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
 | Recherche par ISIN, cours sur 5 ans | Yahoo Finance (API publique non documentée) | Non | 10 min en mémoire |
 | Actualités | Google Actualités (flux RSS public, édition française) | Non | 30 min en mémoire |
 | Logos des éditeurs | Service de favicons de Google | Non | Navigateur |
-| Horaires de marché | Calcul local (`shared/src/markets/market-hours.ts`) | — | — |
+| Horaires Paris et New York | Calcul local (`shared/src/markets/market-hours.ts`) | — | — |
+| Séances des places asiatiques | Yahoo Finance, via l'indice de chaque place (`^HSI`, `000001.SS`…) | Non | Relues toutes les 10 min par l'accueil |
 
 Chaque source est derrière un port : la remplacer ne touche qu'un adaptateur. Si les actualités sont en panne, la page s'affiche sans elles. Si les cours le sont, un message propose de réessayer.
 

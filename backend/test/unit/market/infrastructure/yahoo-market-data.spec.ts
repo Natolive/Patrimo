@@ -63,6 +63,33 @@ describe('YahooMarketData', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
+  it('reads the current or next session of a market and its last trading day', async () => {
+    respond({
+      chart: {
+        result: [
+          {
+            meta: { currency: 'HKD', gmtoffset: 28800, currentTradingPeriod: { regular: { start: 1791250200, end: 1791274200 } } },
+            // Dernière séance : lundi 5 octobre à Hong Kong.
+            timestamp: [1791163800],
+            indicators: { quote: [{ close: [26000] }] },
+          },
+        ],
+      },
+    });
+    expect(await new YahooMarketData().session('^HSI')).toEqual({
+      start: new Date('2026-10-06T01:30:00Z'),
+      end: new Date('2026-10-06T08:10:00Z'),
+      lastSession: '2026-10-05',
+    });
+  });
+
+  it('reports a session without trading period or history as unavailable', async () => {
+    respond(chart([1791163800], [1]));
+    await expect(new YahooMarketData().session('^HSI')).rejects.toBeInstanceOf(MarketUnavailableError);
+    respond({ chart: { result: [{ meta: { currency: 'HKD', gmtoffset: 0, currentTradingPeriod: { regular: { start: 1, end: 2 } } }, indicators: { quote: [] } }] } });
+    await expect(new YahooMarketData().session('^HSI')).rejects.toBeInstanceOf(MarketUnavailableError);
+  });
+
   it('reports the market as unavailable on an error or no network', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 429 })));
     await expect(new YahooMarketData().history('AI.PA')).rejects.toBeInstanceOf(MarketUnavailableError);

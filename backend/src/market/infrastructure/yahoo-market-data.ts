@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { Instrument } from '../domain/instrument.entity.js';
 import { MarketData } from '../domain/market-data.js';
 import type { PricePoint } from '../domain/price-point.entity.js';
+import type { TradingSession } from '../domain/trading-session.entity.js';
 import { MarketUnavailableError } from '../domain/errors/market-unavailable.error.js';
 
 const BASE = 'https://query2.finance.yahoo.com';
@@ -15,7 +16,7 @@ interface SearchResponse {
 interface ChartResponse {
   chart: {
     result: {
-      meta: { currency: string; gmtoffset: number };
+      meta: { currency: string; gmtoffset: number; currentTradingPeriod?: { regular: { start: number; end: number } } };
       timestamp?: number[];
       indicators: { quote: { close: (number | null)[] }[] };
     }[];
@@ -47,6 +48,17 @@ export class YahooMarketData extends MarketData {
       .filter((p): p is PricePoint => p.close != null);
     this.cache.set(symbol, { at: now, points });
     return points;
+  }
+
+  async session(symbol: string): Promise<TradingSession> {
+    const { meta, timestamp = [] } = await this.chart(symbol, '5d');
+    const regular = meta.currentTradingPeriod?.regular;
+    if (!regular || !timestamp.length) throw new MarketUnavailableError();
+    return {
+      start: new Date(regular.start * 1000),
+      end: new Date(regular.end * 1000),
+      lastSession: new Date((timestamp.at(-1)! + meta.gmtoffset) * 1000).toISOString().slice(0, 10),
+    };
   }
 
   private async chart(symbol: string, range: string) {

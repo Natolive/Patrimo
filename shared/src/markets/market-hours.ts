@@ -110,3 +110,61 @@ export function marketStatus(market: Market, now = new Date()): MarketStatus {
   }
   throw new Error(`Aucune séance dans les 15 jours pour ${market.name}`)
 }
+
+// Places asiatiques de l'ETF Émergents : jours fériés lunaires et fixés chaque année, donc séance lue chez Yahoo
+// (via l'indice de la place) plutôt que calculée ; pause de midi ajoutée ici, Yahoo ne la donne pas.
+export interface AsianMarket {
+  key: string
+  name: string
+  // Indice suivi chez Yahoo pour connaître la séance.
+  symbol: string
+  timeZone: string
+  lunch?: [string, string]
+}
+
+export const ASIAN_MARKETS: AsianMarket[] = [
+  { key: 'shanghai', name: 'Shanghai', symbol: '000001.SS', timeZone: 'Asia/Shanghai', lunch: ['11:30', '13:00'] },
+  { key: 'hongKong', name: 'Hong Kong', symbol: '^HSI', timeZone: 'Asia/Hong_Kong', lunch: ['12:00', '13:00'] },
+  { key: 'taipei', name: 'Taïwan', symbol: '^TWII', timeZone: 'Asia/Taipei' },
+  { key: 'mumbai', name: 'Bombay', symbol: '^BSESN', timeZone: 'Asia/Kolkata' },
+  { key: 'seoul', name: 'Séoul', symbol: '^KS11', timeZone: 'Asia/Seoul' },
+]
+
+// Séance donnée par Yahoo : la prochaine ou celle en cours, sinon la dernière (jour férié, week-end).
+export interface MarketSessionDto {
+  key: string
+  start: string
+  end: string
+  // Date locale (AAAA-MM-JJ) de la dernière séance cotée.
+  lastSession: string
+}
+
+export interface SessionStatus {
+  state: 'open' | 'lunch' | 'closed'
+  // null : séance passée et prochaine inconnue (jour férié possible) ; `guess` donne alors l'ouverture habituelle.
+  nextChange: Date | null
+  guess: Date | null
+  lastSession: string
+}
+
+export function sessionStatus(market: AsianMarket, session: MarketSessionDto, now = new Date()): SessionStatus {
+  const start = new Date(session.start)
+  const end = new Date(session.end)
+  const { lastSession } = session
+  if (now < start) return { state: 'closed', nextChange: start, guess: null, lastSession }
+  if (now < end) {
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: market.timeZone }).format(start)
+    const [lunchStart, lunchEnd] = market.lunch?.map((t) => zoned(day, t, market.timeZone)) ?? []
+    if (lunchStart && lunchEnd && now >= lunchStart && now < lunchEnd) return { state: 'lunch', nextChange: lunchEnd, guess: null, lastSession }
+    return { state: 'open', nextChange: lunchStart && now < lunchStart ? lunchStart : end, guess: null, lastSession }
+  }
+  // Séance passée : ouverture habituelle le jour de semaine suivant, à confirmer (Yahoo ne connaît pas encore la suivante).
+  const hhmm = new Intl.DateTimeFormat('en-GB', { timeZone: market.timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(start)
+  let day = new Intl.DateTimeFormat('en-CA', { timeZone: market.timeZone }).format(now)
+  let guess = zoned(day, hhmm, market.timeZone)
+  while (guess <= now || [0, 6].includes(new Date(`${day}T00:00:00Z`).getUTCDay())) {
+    day = shift(new Date(`${day}T00:00:00Z`), 1)
+    guess = zoned(day, hhmm, market.timeZone)
+  }
+  return { state: 'closed', nextChange: null, guess, lastSession }
+}

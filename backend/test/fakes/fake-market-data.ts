@@ -1,8 +1,9 @@
 import type { Instrument } from '@src/market/domain/instrument.entity.js';
 import { MarketData } from '@src/market/domain/market-data.js';
 import type { PricePoint } from '@src/market/domain/price-point.entity.js';
+import type { TradingSession } from '@src/market/domain/trading-session.entity.js';
 
-// Cours fixés par le test : `instruments` retrouvés par ISIN ou symbole, `histories` par symbole.
+// Cours fixés par le test : `instruments` retrouvés par ISIN ou symbole, `histories` et `sessions` par symbole (séance absente = place injoignable).
 export class FakeMarketData extends MarketData {
   instruments: (Instrument & { isin: string })[] = [{ symbol: 'AI.PA', isin: 'FR0000120073', name: "L'Air Liquide S.A.", currency: 'EUR' }];
   histories = new Map<string, PricePoint[]>([
@@ -19,6 +20,14 @@ export class FakeMarketData extends MarketData {
   async search(query: string) {
     const found = this.instruments.find((i) => i.isin === query || i.symbol === query);
     return found ? { symbol: found.symbol, name: found.name, currency: found.currency } : null;
+  }
+
+  sessions = new Map<string, TradingSession>([['^HSI', { start: new Date('2026-10-06T01:30:00Z'), end: new Date('2026-10-06T08:10:00Z'), lastSession: '2026-10-05' }]]);
+
+  async session(symbol: string) {
+    const session = this.sessions.get(symbol);
+    if (!session) throw new Error(`Pas de séance pour ${symbol}`);
+    return session;
   }
 
   async history(symbol: string) {
