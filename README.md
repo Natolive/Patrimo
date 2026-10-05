@@ -49,7 +49,7 @@ En tête de l'accueil : Euronext Paris (9 h – 17 h 30, où se traitent les ETF
 ## Actualités
 
 - Accueil : bandeau latéral (à droite sur grand écran, sous le tableau de bord sinon) avec les actualités de toutes les valeurs suivies (20 plus récentes, chaque dépêche une fois avec les valeurs qu'elle concerne, logo de l'éditeur).
-- Fiche d'une valeur suivie : ses actualités et ses mots-clés, modifiables (vide = revenir à la suggestion).
+- Fiche d'une valeur suivie : même bandeau latéral, avec ses actualités et ses mots-clés, modifiables (vide = revenir à la suggestion).
 - Suggestion : pour une action, le nom de l'entreprise ; pour un ETF, son marché (Nasdaq, Wall Street, marchés émergents, Bourses européennes…), ce qui fait bouger l'indice plutôt que le fonds.
 - Google Actualités (flux RSS public, édition française, 14 derniers jours), gardé 30 minutes ; titres et liens seulement, pas de photo (le flux n'en donne pas). En panne : pas d'actualités, le reste s'affiche.
 
