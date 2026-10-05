@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { AssetSuggestion } from '../domain/asset-suggestion.entity.js';
 import type { Instrument } from '../domain/instrument.entity.js';
 import { MarketData } from '../domain/market-data.js';
 import type { PricePoint } from '../domain/price-point.entity.js';
@@ -7,11 +8,11 @@ import { MarketUnavailableError } from '../domain/errors/market-unavailable.erro
 
 const BASE = 'https://query2.finance.yahoo.com';
 const CACHE_MS = 10 * 60 * 1000;
-// Actions et ETF seulement ; Paris d'abord quand un ETF est coté sur plusieurs places.
+// Actions et ETF seulement ; symbole exact d'abord (valeur choisie dans la recherche), sinon Paris quand elle est cotée sur plusieurs places.
 const TYPES = ['EQUITY', 'ETF'];
 
 interface SearchResponse {
-  quotes?: { symbol: string; quoteType: string; exchange: string; longname?: string; shortname?: string }[];
+  quotes?: { symbol: string; quoteType: string; exchange: string; exchDisp?: string; longname?: string; shortname?: string }[];
 }
 interface ChartResponse {
   chart: {
@@ -32,10 +33,22 @@ export class YahooMarketData extends MarketData {
   async search(query: string): Promise<Instrument | null> {
     const { quotes = [] } = await this.get<SearchResponse>(`/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`);
     const matches = quotes.filter((q) => TYPES.includes(q.quoteType));
-    const quote = matches.find((q) => q.exchange === 'PAR') ?? matches[0];
+    const quote = matches.find((q) => q.symbol.toUpperCase() === query.trim().toUpperCase()) ?? matches.find((q) => q.exchange === 'PAR') ?? matches[0];
     if (!quote) return null;
     const { currency } = (await this.chart(quote.symbol, '5d')).meta;
     return { symbol: quote.symbol, name: quote.longname ?? quote.shortname ?? quote.symbol, currency };
+  }
+
+  async suggest(query: string): Promise<AssetSuggestion[]> {
+    const { quotes = [] } = await this.get<SearchResponse>(`/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0`);
+    return quotes
+      .filter((q) => TYPES.includes(q.quoteType))
+      .map((q) => ({
+        symbol: q.symbol,
+        name: q.longname ?? q.shortname ?? q.symbol,
+        exchange: q.exchDisp ?? q.exchange,
+        type: q.quoteType === 'ETF' ? 'etf' : 'equity',
+      }));
   }
 
   async history(symbol: string, now = Date.now()): Promise<PricePoint[]> {

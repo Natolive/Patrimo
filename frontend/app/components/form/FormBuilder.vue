@@ -14,6 +14,8 @@ defineProps<{
   submit: (data: O) => Promise<unknown>
   /** Affiche les valeurs sans bouton d'envoi. */
   readonly?: boolean
+  /** Couleur du bouton d'envoi (ex. `error` pour une vente), `primary` par défaut. */
+  submitColor?: 'primary' | 'success' | 'error'
 }>()
 const state = defineModel<T>('state', { required: true })
 
@@ -98,7 +100,7 @@ const shaking = ref(false)
       </template>
     </div>
 
-    <UButton v-if="!readonly" type="submit" size="xl" block loading-auto class="enter font-semibold" :style="{ '--i': fields.length }">
+    <UButton v-if="!readonly" type="submit" size="xl" block loading-auto :color="submitColor ?? 'primary'" class="enter font-semibold" :style="{ '--i': fields.length }">
       {{ submitLabel }}
     </UButton>
   </UForm>

@@ -1,3 +1,4 @@
+import type { AssetSuggestion } from '@src/market/domain/asset-suggestion.entity.js';
 import type { Instrument } from '@src/market/domain/instrument.entity.js';
 import { MarketData } from '@src/market/domain/market-data.js';
 import type { PricePoint } from '@src/market/domain/price-point.entity.js';
@@ -28,6 +29,14 @@ export class FakeMarketData extends MarketData {
     const session = this.sessions.get(symbol);
     if (!session) throw new Error(`Pas de séance pour ${symbol}`);
     return session;
+  }
+
+  // Toutes les valeurs dont le nom, le symbole ou l'ISIN contient la recherche (sans casse).
+  async suggest(query: string): Promise<AssetSuggestion[]> {
+    const q = query.toLowerCase();
+    return this.instruments
+      .filter((i) => `${i.name} ${i.symbol} ${i.isin}`.toLowerCase().includes(q))
+      .map((i) => ({ symbol: i.symbol, name: i.name, exchange: 'Paris', type: 'equity' }));
   }
 
   async history(symbol: string) {

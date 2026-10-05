@@ -1,36 +1,18 @@
 <script setup lang="ts">
-import { watchSchema, type SaveWatchDto, type WatchDto } from '@patrimo/shared'
+import type { WatchDto } from '@patrimo/shared'
 import type { TableColumn } from '@nuxt/ui'
-import type { FormFieldConfig } from '~/types/form'
 
 useHead({ title: 'Suivi' })
 
 const api = useApi()
 const toast = useToast()
+const { openSearch } = useSearch()
 // Chargées page par page au défilement (les cours ne sont demandés que pour la page).
-const { items: watches, loading, error, done, loadMore, reset } = usePaginatedList<WatchDto>('/watches')
+const { items: watches, total, loading, error, done, loadMore, reset } = usePaginatedList<WatchDto>('/watches')
 
-const state = ref<SaveWatchDto>({ asset: '' })
-const fields: FormFieldConfig<SaveWatchDto>[] = [
-  { name: 'asset', label: 'Valeur', placeholder: 'FR0000121014 ou MC', icon: 'i-lucide-search', help: 'Code ISIN ou mnémonique d’une action ou d’un ETF.' },
-]
+const link = (w: WatchDto) => `/assets/${encodeURIComponent(w.symbol)}`
 
-// Dernière valeur suivie, surlignée dans la liste.
-const added = ref<string>()
-
-async function follow(dto: SaveWatchDto) {
-  try {
-    const watch = await api<WatchDto>('/watches', { method: 'POST', body: dto })
-    added.value = watch.id
-    toast.add({ title: 'Valeur suivie', description: watch.name, color: 'success', icon: 'i-lucide-check' })
-  } catch (e) {
-    toast.add({ title: 'Suivi impossible', description: apiErrorMessage(e), color: 'error', icon: 'i-lucide-circle-alert' })
-    return
-  }
-  state.value = { asset: '' }
-  await reset()
-}
-
+// Arrêt du suivi confirmé dans une modale qui dit ce qui part.
 const removing = ref<WatchDto>()
 async function unfollow() {
   const watch = removing.value!
@@ -45,45 +27,48 @@ async function unfollow() {
   await reset()
 }
 
-const right = { th: 'text-right', td: 'text-right' }
+const shown = {
+  md: { th: 'hidden md:table-cell text-right', td: 'hidden md:table-cell text-right' },
+  lg: { th: 'hidden lg:table-cell text-right', td: 'hidden lg:table-cell text-right' },
+}
 const columns: TableColumn<WatchDto>[] = [
   { accessorKey: 'name', header: 'Valeur' },
-  { accessorKey: 'price', header: 'Cours', meta: { class: right } },
-  { id: '1m', header: '1 mois', meta: { class: { th: 'hidden md:table-cell text-right', td: 'hidden md:table-cell text-right' } } },
-  { id: '1y', header: '1 an', meta: { class: { th: 'hidden md:table-cell text-right', td: 'hidden md:table-cell text-right' } } },
-  { id: 'fromHigh52', header: 'Vs plus haut', meta: { class: { th: 'hidden lg:table-cell text-right', td: 'hidden lg:table-cell text-right' } } },
+  { accessorKey: 'price', header: 'Cours', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { id: '1m', header: '1 mois', meta: { class: shown.md } },
+  { id: '1y', header: '1 an', meta: { class: shown.md } },
+  { id: 'fromHigh52', header: 'Vs plus haut', meta: { class: shown.lg } },
   { id: 'trend', header: 'Tendance', meta: { class: { th: 'hidden sm:table-cell', td: 'hidden sm:table-cell' } } },
-  { id: 'actions', header: '' },
+  { id: 'actions', header: '', meta: { class: { td: 'text-right' } } },
 ]
 </script>
 
 <template>
-  <div class="grid items-start gap-6 lg:grid-cols-[22rem_1fr]">
-    <!-- Formulaire collé en haut de l'écran pendant le défilement de la liste (grand écran). -->
-    <UCard class="lg:sticky lg:top-22">
-      <template #header>
-        <h1 class="text-highlighted font-semibold">Suivre une valeur</h1>
-      </template>
-      <p class="text-muted mb-6 text-sm">Garde un œil sur une action ou un ETF avant d’acheter : cours, tendance et moyennes mobiles.</p>
-      <FormBuilder v-model:state="state" :schema="watchSchema" :fields="fields" :submit="follow" submit-label="Suivre" />
-    </UCard>
+  <div class="space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-highlighted text-2xl font-bold tracking-tight">Suivi</h1>
+        <p class="text-muted mt-1">
+          {{ total ?? '…' }} valeur{{ (total ?? 0) > 1 ? 's' : '' }} suivie{{ (total ?? 0) > 1 ? 's' : '' }} : cours, tendance et actualités.
+          Les valeurs achetées y sont ajoutées automatiquement.
+        </p>
+      </div>
+      <UButton label="Rechercher une valeur" icon="i-lucide-search" color="neutral" variant="outline" @click="openSearch">
+        <template #trailing><span class="hidden gap-0.5 sm:flex"><UKbd value="meta" /><UKbd value="K" /></span></template>
+      </UButton>
+    </div>
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
-      <template #header>
-        <h2 class="text-highlighted font-semibold">Valeurs suivies</h2>
-      </template>
+      <UCard v-if="done && !watches.length" variant="soft" class="m-4 text-center">
+        <UIcon name="i-lucide-eye" class="text-muted mx-auto size-10" />
+        <p class="text-highlighted mt-4 font-semibold">Aucune valeur suivie</p>
+        <p class="text-muted mt-1">Cherche une action ou un ETF, puis « Suivre » sur sa fiche pour garder un œil dessus avant d’acheter.</p>
+        <UButton label="Rechercher une valeur" icon="i-lucide-search" class="mt-6" @click="openSearch" />
+      </UCard>
       <!-- Tableau affiché dès la première page ; avant, seulement les lignes fantômes. -->
-      <UTable
-        v-if="watches.length || done"
-        :data="watches"
-        :columns="columns"
-        :meta="{ class: { tr: (row) => (row.original.id === added ? 'flash' : '') } }"
-        class="tabular-nums"
-        empty="Aucune valeur suivie : ajoute-en une avec son code ISIN."
-      >
+      <UTable v-else-if="watches.length" :data="watches" :columns="columns" class="tabular-nums">
         <template #name-cell="{ row }">
-          <NuxtLink :to="`/assets/${encodeURIComponent(row.original.symbol)}`" class="group block max-w-56">
-            <span class="text-highlighted block truncate font-medium group-hover:text-primary">{{ row.original.name }}</span>
+          <NuxtLink :to="link(row.original)" class="group block max-w-36 sm:max-w-72">
+            <span class="text-highlighted group-hover:text-primary block truncate font-medium">{{ row.original.name }}</span>
             <span class="text-muted text-xs">{{ row.original.symbol }}</span>
           </NuxtLink>
         </template>
@@ -95,14 +80,18 @@ const columns: TableColumn<WatchDto>[] = [
           <span v-if="row.original.trend.performance[period] !== null" :class="gainClass(row.original.trend.performance[period]!)">
             {{ percent(row.original.trend.performance[period]!) }}
           </span>
-          <span v-else class="text-muted">—</span>
+          <span v-else class="text-dimmed">—</span>
         </template>
         <template #fromHigh52-cell="{ row }">
           <span :class="gainClass(row.original.trend.fromHigh52)">{{ percent(row.original.trend.fromHigh52) }}</span>
         </template>
         <template #trend-cell="{ row }"><TrendBadge :signal="row.original.trend.signal" /></template>
         <template #actions-cell="{ row }">
-          <UButton icon="i-lucide-eye-off" color="neutral" variant="ghost" :aria-label="`Ne plus suivre ${row.original.name}`" @click="removing = row.original" />
+          <div class="flex justify-end gap-1">
+            <UTooltip text="Acheter"><UButton icon="i-lucide-arrow-down-to-line" color="success" variant="soft" size="sm" :aria-label="`Acheter ${row.original.name}`" :to="`${link(row.original)}?side=buy`" /></UTooltip>
+            <UTooltip text="Vendre"><UButton icon="i-lucide-arrow-up-from-line" color="error" variant="soft" size="sm" :aria-label="`Vendre ${row.original.name}`" :to="`${link(row.original)}?side=sell`" /></UTooltip>
+            <UTooltip text="Ne plus suivre"><UButton icon="i-lucide-eye-off" color="neutral" variant="ghost" size="sm" :aria-label="`Ne plus suivre ${row.original.name}`" @click="removing = row.original" /></UTooltip>
+          </div>
         </template>
       </UTable>
       <ListSkeleton v-if="loading" :rows="watches.length ? 3 : 8" />
@@ -121,7 +110,7 @@ const columns: TableColumn<WatchDto>[] = [
 
     <UModal :open="!!removing" title="Ne plus suivre cette valeur ?" @update:open="(open) => !open && (removing = undefined)">
       <template #body>
-        <p v-if="removing">{{ removing.name }} disparaît de ta liste de suivi. Tes achats éventuels restent dans ton portefeuille.</p>
+        <p v-if="removing">{{ removing.name }} disparaît de ta liste de suivi et de tes actualités. Tes opérations éventuelles restent dans ton portefeuille.</p>
       </template>
       <template #footer>
         <div class="flex w-full justify-end gap-2">

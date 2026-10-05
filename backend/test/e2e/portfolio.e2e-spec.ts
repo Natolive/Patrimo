@@ -40,7 +40,12 @@ describe('Portfolio (e2e)', () => {
     await http.get('/purchases').expect(401);
     await http.get('/portfolio').expect(401);
     await http.get('/markets/sessions').expect(401);
+    await http.get('/markets/search?q=liquide').expect(401);
     await http.post('/auth/login').send({ email, password: '12345678' }).expect(200);
+    expect((await http.get('/markets/search?q=liquide').expect(200)).body).toMatchObject([{ symbol: 'AI.PA', type: 'equity' }]);
+    await http.get('/markets/search?q=a').expect(400);
+    expect((await http.get('/markets/price/AI.PA').expect(200)).body).toEqual({ symbol: 'AI.PA', price: 120, date: '2026-01-06' });
+    await http.get('/markets/price/NOPE').expect(400);
     expect((await http.get('/markets/sessions').expect(200)).body).toEqual([{ key: 'hongKong', start: '2026-10-06T01:30:00.000Z', end: '2026-10-06T08:10:00.000Z', lastSession: '2026-10-05' }]);
 
     await http.post('/purchases').send({ asset: 'FR0000120073', boughtAt: '2026-01-02', quantity: 'abc', unitPrice: '100', fees: '0' }).expect(400);
@@ -63,7 +68,9 @@ describe('Portfolio (e2e)', () => {
 
     const { body: asset } = await http.get('/portfolio/AI.PA').expect(200);
     expect(asset.points).toHaveLength(3);
-    await http.get('/portfolio/CW8.PA').expect(404);
+    // Valeur ni détenue ni suivie : fiche quand même (arrivée depuis la recherche) ; symbole inconnu : 404.
+    expect((await http.get('/portfolio/AI.PA').expect(200)).body).toMatchObject({ symbol: 'AI.PA' });
+    await http.get('/portfolio/NOPE').expect(404);
 
     const { body: watches } = await http.get('/watches?limit=10').expect(200);
     expect(watches).toMatchObject({ total: 1, items: [{ symbol: 'AI.PA', price: 120 }] });

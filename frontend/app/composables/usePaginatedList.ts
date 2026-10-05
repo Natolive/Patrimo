@@ -38,5 +38,7 @@ export function usePaginatedList<T>(path: string, query: () => Record<string, st
   }
 
   void loadMore()
+  // Opération ou suivi ajouté ailleurs (fenêtre d'ordre) : la liste repart de la première page.
+  watch(useDataVersion().version, () => reset())
   return { items, total, loading, error, done, loadMore, reset }
 }

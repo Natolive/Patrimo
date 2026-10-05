@@ -41,9 +41,12 @@ const menu = computed<DropdownMenuItem[][]>(() => [
           <NuxtLink to="/" class="rounded-md text-xl focus-visible:outline-2 focus-visible:outline-offset-4" aria-label="Patrimo, tableau de bord"><BrandLogo /></NuxtLink>
           <UNavigationMenu :items="nav" class="hidden lg:flex" />
         </div>
-        <UDropdownMenu :items="menu">
-          <UButton :label="fullName" icon="i-lucide-circle-user-round" color="neutral" variant="ghost" :ui="{ label: 'hidden sm:inline' }" aria-label="Mon compte" />
-        </UDropdownMenu>
+        <div class="flex items-center gap-2">
+          <SearchGlobal />
+          <UDropdownMenu :items="menu">
+            <UButton :label="fullName" icon="i-lucide-circle-user-round" color="neutral" variant="ghost" :ui="{ label: 'hidden sm:inline' }" aria-label="Mon compte" />
+          </UDropdownMenu>
+        </div>
       </div>
     </header>
     <!-- Marge basse sous lg : la barre d'onglets ne cache pas la fin de la page. -->

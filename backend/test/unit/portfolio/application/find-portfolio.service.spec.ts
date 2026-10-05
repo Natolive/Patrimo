@@ -1,6 +1,6 @@
 import { FindAssetService } from '@src/portfolio/application/find-asset.service.js';
 import { FindPortfolioService } from '@src/portfolio/application/find-portfolio.service.js';
-import { AssetNotTrackedError } from '@src/portfolio/domain/errors/asset-not-tracked.error.js';
+import { AssetNotFoundError } from '@src/market/domain/errors/asset-not-found.error.js';
 import { CreateWatchService } from '@src/watchlist/application/create-watch.service.js';
 import { lea, max, purchase, setupPurchases } from '../../purchases/application/setup.js';
 
@@ -82,9 +82,15 @@ describe('FindAssetService', () => {
     expect(asset.trend.performance['1m']).toBeNull();
   });
 
-  it('refuses a value I neither hold nor follow', async () => {
+  it('gives any listed value found from the search, without position, purchases nor watch', async () => {
     const app = setup();
     await app.create.execute(max, purchase);
-    await expect(app.asset.execute(lea, 'AI.PA')).rejects.toBeInstanceOf(AssetNotTrackedError);
+    expect(await app.asset.execute(lea, 'AI.PA')).toMatchObject({ name: "L'Air Liquide S.A.", currency: 'EUR', price: 120, position: null, watchId: null, purchases: [] });
+  });
+
+  it('refuses an unknown symbol, or one the provider resolves to another value', async () => {
+    const app = setup();
+    await expect(app.asset.execute(lea, 'NOPE')).rejects.toBeInstanceOf(AssetNotFoundError);
+    await expect(app.asset.execute(lea, 'FR0000120073')).rejects.toBeInstanceOf(AssetNotFoundError);
   });
 });

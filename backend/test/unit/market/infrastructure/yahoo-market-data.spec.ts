@@ -30,6 +30,37 @@ describe('YahooMarketData', () => {
     expect(fetch.mock.calls[0][0]).toContain('q=CW8%20%26%20co');
   });
 
+  it('takes the exact symbol chosen in the search over the Paris listing', async () => {
+    respond(
+      {
+        quotes: [
+          { symbol: 'ASML.PA', quoteType: 'EQUITY', exchange: 'PAR' },
+          { symbol: 'ASML.AS', quoteType: 'EQUITY', exchange: 'AMS', longname: 'ASML Holding N.V.' },
+        ],
+      },
+      chart(),
+    );
+    expect(await new YahooMarketData().search(' asml.as ')).toMatchObject({ symbol: 'ASML.AS', name: 'ASML Holding N.V.' });
+  });
+
+  it('suggests stocks and ETFs with their place and type', async () => {
+    respond({
+      quotes: [
+        { symbol: 'CW8.PA', quoteType: 'ETF', exchange: 'PAR', exchDisp: 'Paris', longname: 'Amundi MSCI World' },
+        { symbol: 'AI.PA', quoteType: 'EQUITY', exchange: 'PAR', shortname: 'AIR LIQUIDE' },
+        { symbol: 'XX', quoteType: 'MUTUALFUND', exchange: 'PAR' },
+        { symbol: 'ABC', quoteType: 'EQUITY', exchange: 'NMS' },
+      ],
+    });
+    expect(await new YahooMarketData().suggest('a')).toEqual([
+      { symbol: 'CW8.PA', name: 'Amundi MSCI World', exchange: 'Paris', type: 'etf' },
+      { symbol: 'AI.PA', name: 'AIR LIQUIDE', exchange: 'PAR', type: 'equity' },
+      { symbol: 'ABC', name: 'ABC', exchange: 'NMS', type: 'equity' },
+    ]);
+    respond({});
+    expect(await new YahooMarketData().suggest('zzz')).toEqual([]);
+  });
+
   it('falls back to another place, then to the symbol as name', async () => {
     respond({ quotes: [{ symbol: 'ASML', quoteType: 'EQUITY', exchange: 'NMS' }] }, chart());
     expect(await new YahooMarketData().search('asml')).toMatchObject({ symbol: 'ASML', name: 'ASML' });

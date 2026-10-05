@@ -59,6 +59,7 @@ const sortable = (label: string, hint?: string): TableColumn<PositionDto>['heade
 const right = { th: 'text-right', td: 'text-right' }
 const shown = {
   sm: { th: 'hidden sm:table-cell', td: 'hidden sm:table-cell' },
+  smRight: { th: 'hidden sm:table-cell text-right', td: 'hidden sm:table-cell text-right' },
   md: { th: 'hidden md:table-cell text-right', td: 'hidden md:table-cell text-right' },
   lg: { th: 'hidden lg:table-cell text-right', td: 'hidden lg:table-cell text-right' },
   xl: { th: 'hidden xl:table-cell text-right', td: 'hidden xl:table-cell text-right' },
@@ -67,7 +68,7 @@ const shown = {
 const columns: TableColumn<PositionDto>[] = [
   { accessorKey: 'name', header: sortable('Valeur') },
   { accessorKey: 'averageCost', header: sortable('PRU', 'Prix de revient unitaire : ce que t’a coûté un titre en moyenne, frais compris.'), meta: { class: shown.md } },
-  { accessorKey: 'price', header: sortable('Cours', 'Dernier cours, et sa variation depuis la clôture précédente.'), meta: { class: right } },
+  { accessorKey: 'price', header: sortable('Cours', 'Dernier cours, et sa variation depuis la clôture précédente.'), meta: { class: shown.smRight } },
   { accessorKey: 'value', header: sortable('Valorisation'), meta: { class: right } },
   { accessorKey: 'weight', header: sortable('Poids', 'Part de cette ligne dans la valorisation totale.'), meta: { class: shown.md } },
   { accessorKey: 'gain', header: sortable('+/- latente', 'Gain ou perte si tu vendais au cours actuel : valorisation moins coût d’achat.'), meta: { class: right } },
@@ -77,6 +78,7 @@ const columns: TableColumn<PositionDto>[] = [
   { id: 'vsSma200', accessorFn: (p) => vsSma200(p) ?? -Infinity, header: sortable('vs MM200', 'Écart du cours à sa moyenne des 200 dernières séances : au-dessus, la tendance de fond est positive.'), meta: { class: shown.xl } },
   { id: 'volatility', accessorFn: (p) => p.trend.volatility ?? -Infinity, header: sortable('Volatilité', 'Amplitude habituelle des variations sur un an. Au-delà de 30 %, le cours bouge fort.'), meta: { class: shown.xl } },
   { id: 'fromHigh52', accessorFn: (p) => p.trend.fromHigh52, header: sortable('vs + haut', 'Écart au plus haut des 52 dernières semaines.'), meta: { class: shown['2xl'] } },
+  { id: 'actions', header: '', meta: { class: { td: 'text-right' } } },
 ]
 const sorting = ref([{ id: 'value', desc: true }])
 
@@ -150,7 +152,23 @@ const lessons = [
             </div>
           </div>
         </template>
-        <UTable v-model:sorting="sorting" :data="positions" :columns="columns" class="tabular-nums" empty="Aucune position ne correspond à ces filtres.">
+        <!-- Téléphone : une carte par ligne (le tableau ne tient pas) ; un appui ouvre la fiche et son encart d'ordre. -->
+        <ul class="divide-default divide-y sm:hidden">
+          <li v-for="p in positions" :key="p.symbol">
+            <NuxtLink :to="link(p)" class="flex items-center justify-between gap-4 px-4 py-3 tabular-nums">
+              <span class="min-w-0">
+                <span class="text-highlighted block truncate font-medium">{{ p.name }}</span>
+                <span class="text-muted text-xs">{{ p.symbol }} · {{ quantity(p.quantity) }} titres · {{ percent(p.weight, false) }}</span>
+              </span>
+              <span class="shrink-0 text-right">
+                <span class="text-highlighted block font-medium">{{ money(p.value, p.currency) }}</span>
+                <span class="text-xs" :class="gainClass(p.gain)">{{ signedMoney(p.gain, p.currency) }} ({{ percent(p.gainRate) }})</span>
+              </span>
+            </NuxtLink>
+          </li>
+          <li v-if="!positions.length" class="text-muted px-4 py-6 text-center text-sm">Aucune position ne correspond à ces filtres.</li>
+        </ul>
+        <UTable v-model:sorting="sorting" :data="positions" :columns="columns" class="hidden tabular-nums sm:block" empty="Aucune position ne correspond à ces filtres.">
           <template #name-cell="{ row }">
             <NuxtLink :to="link(row.original)" class="group block max-w-60">
               <span class="text-highlighted group-hover:text-primary block truncate font-medium">{{ row.original.name }}</span>
@@ -191,6 +209,12 @@ const lessons = [
           <template #volatility-cell="{ row }">
             <span v-if="row.original.trend.volatility !== null" :class="row.original.trend.volatility > 0.3 ? 'text-warning font-medium' : ''">{{ percent(row.original.trend.volatility, false) }}</span>
             <span v-else class="text-dimmed">—</span>
+          </template>
+          <template #actions-cell="{ row }">
+            <div class="flex justify-end gap-1">
+              <UTooltip text="Acheter"><UButton icon="i-lucide-arrow-down-to-line" color="success" variant="soft" size="sm" :aria-label="`Acheter ${row.original.name}`" :to="`${link(row.original)}?side=buy`" /></UTooltip>
+              <UTooltip text="Vendre"><UButton icon="i-lucide-arrow-up-from-line" color="error" variant="soft" size="sm" :aria-label="`Vendre ${row.original.name}`" :to="`${link(row.original)}?side=sell`" /></UTooltip>
+            </div>
           </template>
           <template #fromHigh52-cell="{ row }">
             <span :class="gainClass(row.original.trend.fromHigh52)">{{ percent(row.original.trend.fromHigh52) }}</span>

@@ -8,9 +8,13 @@ Les courtiers montrent les positions et les opérations, rarement l'évolution d
 
 ## Ce que fait l'application
 
+### 0. Trouver n'importe quelle valeur — recherche (en haut, ou ⌘K / Ctrl+K)
+
+Nom, code ISIN ou mnémonique : les actions et ETF cotés s'affichent pendant la frappe, avec leur symbole, leur place de cotation (Paris, Francfort…) et leur type. Valider ouvre la **fiche complète** de la valeur, même si on ne la détient ni ne la suit, avec l'encart pour acheter, vendre ou la suivre.
+
 ### 1. Saisir ses opérations — page « Opérations »
 
-Pour chaque achat ou vente de son avis d'opéré (le document que le courtier envoie après chaque ordre exécuté) :
+Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le document que le courtier envoie après chaque ordre exécuté) :
 
 | Champ | Exemple | Remarque |
 |---|---|---|
@@ -22,7 +26,8 @@ Pour chaque achat ou vente de son avis d'opéré (le document que le courtier en
 | Frais | 0 | Courtage ; le total de l'avis d'opéré moins quantité × prix |
 
 - Une vente ne peut porter que sur des titres détenus à sa date.
-- La liste se charge au fil du défilement, 20 opérations à la fois, avec des lignes fantômes pendant le chargement (de même pour les valeurs suivies et les opérations d'une fiche). Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste (de même pour « Suivre une valeur »).
+- Le même formulaire est l'encart « Passer un ordre » de chaque fiche, avec la valeur déjà choisie et le prix prérempli au dernier cours.
+- La liste se charge au fil du défilement, 20 opérations à la fois, avec des lignes fantômes pendant le chargement (de même pour les valeurs suivies et les opérations d'une fiche). Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste.
 - Pas de modification : supprimer l'opération puis la ressaisir. Un achat dont dépend une vente ne se supprime qu'après elle.
 - Les virements et les espèces du compte ne sont pas suivis.
 
@@ -42,12 +47,15 @@ Toutes les lignes détenues, de façon technique mais lisible :
 - **Synthèse** : valorisation, coût des titres détenus, plus-value latente et réalisée.
 - **Poids dans le portefeuille** : où est l'argent, ligne par ligne, de la plus grosse à la plus petite.
 - **Contribution à la plus-value** : d'où vient la plus-value latente, gains en vert à droite, pertes en rouge à gauche.
-- **Détail des positions** : tableau triable (clic sur un en-tête) avec recherche et filtres (en gain, en perte, haussières, baissières) : PRU, cours et variation du jour, valorisation, poids, plus-value latente et réalisée, tendance, performance sur 1 an, écart à la moyenne 200 séances, volatilité, écart au plus haut sur 52 semaines. Chaque notion technique a une bulle d'aide au survol de son en-tête ; les colonnes secondaires se masquent sur petit écran.
+- **Acheter / Vendre** sur chaque ligne : ouvre la fiche de la valeur, sens déjà choisi dans l'encart d'ordre.
+- **Détail des positions** : tableau triable (clic sur un en-tête) avec recherche et filtres (en gain, en perte, haussières, baissières) : PRU, cours et variation du jour, valorisation, poids, plus-value latente et réalisée, tendance, performance sur 1 an, écart à la moyenne 200 séances, volatilité, écart au plus haut sur 52 semaines. Chaque notion technique a une bulle d'aide au survol de son en-tête ; les colonnes secondaires se masquent sur petit écran, et sur téléphone le tableau devient une liste (valorisation et plus-value, un appui ouvre la fiche).
 - **Lignes soldées** : valeurs entièrement vendues et leur plus-value réalisée.
 - **Comment lire cette page** : les notions expliquées en clair (PRU, latent ou réalisé, poids et contribution, moyennes mobiles, volatilité).
 
-### 4. Comprendre une valeur — fiche (clic sur son nom)
+### 4. Comprendre une valeur et passer un ordre — fiche (clic sur son nom, ou depuis la recherche)
 
+- **Passer un ordre** : encart Achat (vert) / Vente (rouge), date du jour, prix prérempli au dernier cours ; à droite sur grand écran, juste sous l'en-tête sur téléphone. La fiche se met à jour aussitôt (position, opérations).
+- **Suivre** : bouton sous le cours si la valeur n'est pas encore suivie.
 - **Cours** sur 1 mois à 5 ans, avec les **moyennes mobiles** sur 50 et 200 séances, ses **opérations** et son **PRU** sur la courbe.
 - **Tendance**, expliquée en une phrase :
   - **haussière** : le cours et la moyenne sur 50 séances sont au-dessus de celle sur 200 ;
@@ -60,7 +68,7 @@ Toutes les lignes détenues, de façon technique mais lisible :
 
 ### 5. Surveiller avant d'acheter — page « Suivi »
 
-Suivre une action ou un ETF par son code ISIN sans l'avoir acheté : cours, variations sur 1 mois et 1 an, écart au plus haut, tendance, et la même fiche qu'une valeur détenue, sans les montants. Une valeur achetée ou vendue y est ajoutée automatiquement ; « Ne plus suivre » la retire, sans toucher aux opérations.
+Les valeurs qu'on surveille, détenues ou non : cours et variation du jour, 1 mois, 1 an, écart au plus haut, tendance. Pour en ajouter une, la chercher (bouton « Rechercher une valeur » ou ⌘K) puis « Suivre » sur sa fiche ; une valeur achetée ou vendue y est ajoutée automatiquement. Sur chaque ligne : Acheter (vert) / Vendre (rouge), qui ouvrent la fiche avec le sens choisi, et « Ne plus suivre », qui ne touche pas aux opérations.
 
 ### 6. Suivre l'actualité qui compte
 
@@ -122,7 +130,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
   - `purchases` : opérations (achats et ventes ; la table porte le nom d'avant les ventes).
   - `portfolio` : positions et lignes soldées, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
-  - `market` : cours et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
+  - `market` : recherche de valeurs, cours, dernier prix et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).
 - `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques et logo en SVG maison (`components/brand/`), police Space Grotesk pour les titres.
 

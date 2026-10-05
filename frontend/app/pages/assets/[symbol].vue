@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TRADE_SIDE_LABELS, type AssetDto, type PurchaseDto, type TrendPeriod } from '@patrimo/shared'
+import { TRADE_SIDE_LABELS, type AssetDto, type PurchaseDto, type TrendPeriod, type WatchDto } from '@patrimo/shared'
 
 const route = useRoute()
 const symbol = computed(() => String(route.params.symbol))
@@ -12,6 +12,20 @@ const points = computed(() => inRange(data.value?.points ?? [], range.value))
 const currency = computed(() => data.value?.currency ?? 'EUR')
 // Tableau « Mes opérations » chargé page par page ; la courbe garde toutes les opérations (repères).
 const trades = usePaginatedList<PurchaseDto>('/purchases', () => ({ symbol: symbol.value }))
+// Suivre une valeur arrivée depuis la recherche (elle rejoint la page Suivi et le fil d'actualités).
+const toast = useToast()
+const { bump } = useDataVersion()
+async function follow() {
+  try {
+    const watch = await api<WatchDto>('/watches', { method: 'POST', body: { asset: symbol.value } })
+    toast.add({ title: 'Valeur suivie', description: watch.name, color: 'success', icon: 'i-lucide-check' })
+  } catch (e) {
+    toast.add({ title: 'Suivi impossible', description: apiErrorMessage(e), color: 'error', icon: 'i-lucide-circle-alert' })
+    return
+  }
+  await bump()
+}
+
 const markers = computed(() =>
   (data.value?.purchases ?? []).map((p) => ({ date: p.boughtAt, label: `${TRADE_SIDE_LABELS[p.side]} ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` })),
 )
@@ -38,7 +52,7 @@ const reading = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-6" :class="{ 'xl:grid-cols-[minmax(0,1fr)_22rem]': data?.watchId }">
+  <div class="grid grid-cols-[minmax(0,1fr)] items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
     <div class="space-y-6">
       <UButton label="Retour" icon="i-lucide-arrow-left" color="neutral" variant="link" class="-ml-2.5" @click="$router.back()" />
 
@@ -64,8 +78,12 @@ const reading = computed(() => {
           <div class="text-right">
             <p class="text-highlighted text-3xl font-semibold">{{ unitMoney(data.price, currency) }}</p>
             <p class="font-medium tabular-nums" :class="gainClass(data.dayChangeRate)">{{ percent(data.dayChangeRate) }} aujourd’hui</p>
+            <UButton v-if="!data.watchId" label="Suivre" icon="i-lucide-eye" color="neutral" variant="outline" class="mt-3" loading-auto @click="follow" />
           </div>
         </div>
+
+        <!-- Encart d'ordre sous l'en-tête sur téléphone et tablette ; à droite sur grand écran. -->
+        <OrderCard :symbol="data.symbol" :price="data.price" class="xl:hidden" />
 
         <div v-if="data.position" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatTile label="Valorisation" :value="money(data.position.value, currency)" :hint="`${percent(data.position.weight, false)} du portefeuille`" />
@@ -166,7 +184,9 @@ const reading = computed(() => {
             class="tabular-nums"
           >
             <template #boughtAt-cell="{ row }">{{ longDate(row.original.boughtAt) }}</template>
-            <template #side-cell="{ row }">{{ TRADE_SIDE_LABELS[row.original.side] }}</template>
+            <template #side-cell="{ row }">
+            <UBadge :label="TRADE_SIDE_LABELS[row.original.side]" :color="row.original.side === 'buy' ? 'success' : 'error'" variant="subtle" />
+          </template>
             <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
             <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, currency) }}</template>
             <template #fees-cell="{ row }">{{ money(row.original.fees, currency) }}</template>
@@ -178,9 +198,10 @@ const reading = computed(() => {
       </template>
     </div>
 
-    <!-- Bandeau latéral comme sur l'accueil : à droite sur grand écran, sous la fiche sinon. -->
-    <aside v-if="data?.watchId" class="xl:sticky xl:top-22">
-      <NewsCard :watch-id="data.watchId" />
+    <!-- Colonne de droite sur grand écran : encart d'ordre, puis actualités si la valeur est suivie ; sous la fiche sinon. -->
+    <aside v-if="data" class="space-y-6">
+      <OrderCard :symbol="data.symbol" :price="data.price" class="hidden xl:block" />
+      <NewsCard v-if="data.watchId" :watch-id="data.watchId" />
     </aside>
   </div>
 </template>

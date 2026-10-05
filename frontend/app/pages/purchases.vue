@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { purchaseSchema, TRADE_SIDE_LABELS, TRADE_SIDES, type PurchaseDto, type PurchaseInput, type SavePurchaseDto } from '@patrimo/shared'
+import { TRADE_SIDE_LABELS, type PurchaseDto } from '@patrimo/shared'
 import type { TableColumn } from '@nuxt/ui'
-import type { FormFieldConfig } from '~/types/form'
 
 useHead({ title: 'Opérations' })
 
@@ -10,42 +9,10 @@ const toast = useToast()
 // Chargées page par page au défilement.
 const { items: purchases, loading, error, done, loadMore, reset } = usePaginatedList<PurchaseDto>('/purchases')
 
-const today = () => new Date().toISOString().slice(0, 10)
-const empty = (): PurchaseInput => ({ side: 'buy', asset: '', boughtAt: today(), quantity: '', unitPrice: '', fees: '0' })
-const state = ref<PurchaseInput>(empty())
-const fields: FormFieldConfig<PurchaseInput>[] = [
-  { name: 'side', label: 'Opération', type: 'select', options: TRADE_SIDES.map((value) => ({ value, label: TRADE_SIDE_LABELS[value] })) },
-  {
-    name: 'asset',
-    label: 'Valeur',
-    placeholder: 'FR0000120073 ou CW8',
-    icon: 'i-lucide-search',
-    help: 'Code ISIN (sur l’avis d’opéré de ton courtier) ou mnémonique.',
-  },
-  { name: 'boughtAt', label: 'Date', type: 'date', half: true },
-  { name: 'quantity', label: 'Quantité', inputmode: 'decimal', placeholder: '10', half: true },
-  { name: 'unitPrice', label: 'Prix unitaire (€)', inputmode: 'decimal', placeholder: '171,585', half: true },
-  { name: 'fees', label: 'Frais (€)', inputmode: 'decimal', placeholder: '1,99', help: 'Courtage, TTF…', half: true },
-]
-
 // Dernière opération ajoutée, surlignée dans la liste.
 const added = ref<string>()
-
-async function add(dto: SavePurchaseDto) {
-  try {
-    const purchase = await api<PurchaseDto>('/purchases', { method: 'POST', body: dto })
-    added.value = purchase.id
-    toast.add({
-      title: `${TRADE_SIDE_LABELS[purchase.side]} ajouté${purchase.side === 'sell' ? 'e' : ''}`,
-      description: `${quantity(purchase.quantity)} × ${purchase.name}`,
-      color: 'success',
-      icon: 'i-lucide-check',
-    })
-  } catch (e) {
-    toast.add({ title: 'Ajout impossible', description: apiErrorMessage(e), color: 'error', icon: 'i-lucide-circle-alert' })
-    return
-  }
-  state.value = empty()
+async function onSaved(purchase: PurchaseDto) {
+  added.value = purchase.id
   await reset()
 }
 
@@ -83,7 +50,7 @@ const columns: TableColumn<PurchaseDto>[] = [
       <template #header>
         <h1 class="text-highlighted font-semibold">Ajouter une opération</h1>
       </template>
-      <FormBuilder v-model:state="state" :schema="purchaseSchema" :fields="fields" :submit="add" submit-label="Ajouter l’opération" />
+      <OrderForm @saved="onSaved" />
     </UCard>
 
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
@@ -104,7 +71,7 @@ const columns: TableColumn<PurchaseDto>[] = [
           <UBadge
             :label="TRADE_SIDE_LABELS[row.original.side]"
             :icon="row.original.side === 'buy' ? 'i-lucide-arrow-down-to-line' : 'i-lucide-arrow-up-from-line'"
-            :color="row.original.side === 'buy' ? 'primary' : 'neutral'"
+            :color="row.original.side === 'buy' ? 'success' : 'error'"
             variant="subtle"
           />
         </template>

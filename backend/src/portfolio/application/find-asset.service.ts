@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import type { AssetDto, UserDto } from '@patrimo/shared';
+import { AssetNotFoundError } from '../../market/domain/errors/asset-not-found.error.js';
 import { MarketData } from '../../market/domain/market-data.js';
 import { PurchaseRepository } from '../../purchases/domain/purchase.repository.js';
 import { toPurchaseDto } from '../../purchases/domain/to-purchase-dto.js';
 import { WatchRepository } from '../../watchlist/domain/watch.repository.js';
 import { buildQuote } from '../domain/build-quote.js';
-import { AssetNotTrackedError } from '../domain/errors/asset-not-tracked.error.js';
 import { movingAverage } from '../domain/moving-average.js';
 import { FindPortfolioService } from './find-portfolio.service.js';
 
-// Fiche d'une valeur détenue ou suivie ; une autre répond comme inconnue.
+// Fiche de n'importe quelle valeur cotée (arrivée depuis la recherche) ; position, opérations et suivi quand il y en a.
 @Injectable()
 export class FindAssetService {
   constructor(
@@ -22,8 +22,10 @@ export class FindAssetService {
   async execute(user: UserDto, symbol: string): Promise<AssetDto> {
     const purchases = (await this.purchases.findByUser(user.id)).filter((p) => p.symbol === symbol);
     const watch = (await this.watches.findByUser(user.id)).find((w) => w.symbol === symbol);
-    const instrument = purchases[0] ?? watch;
-    if (!instrument) throw new AssetNotTrackedError();
+    // Ni détenue ni suivie : nom et devise chez le fournisseur de cours, pour ce symbole exact.
+    const found = purchases[0] ?? watch ?? (await this.market.search(symbol));
+    if (found?.symbol !== symbol) throw new AssetNotFoundError(symbol);
+    const instrument = found;
 
     // Historiques déjà en cache après le calcul du portefeuille (poids de la ligne compris) ; ligne soldée = pas de position.
     const position = purchases.length ? ((await this.portfolio.execute(user)).positions.find((p) => p.symbol === symbol) ?? null) : null;
