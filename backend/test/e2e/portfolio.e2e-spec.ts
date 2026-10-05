@@ -6,6 +6,8 @@ import { DB, type Database } from '@src/common/infrastructure/database/database.
 import { MarketData } from '@src/market/domain/market-data.js';
 import { users } from '@src/users/infrastructure/user.table.js';
 import { FakeMarketData } from '@test/fakes/fake-market-data.js';
+import { FakeNewsFeed } from '@test/fakes/fake-news-feed.js';
+import { NewsFeed } from '@src/news/domain/news-feed.js';
 import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
@@ -17,7 +19,11 @@ describe('Portfolio (e2e)', () => {
   let db: Database;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MarketData).useValue(new FakeMarketData()).compile();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).overrideProvider(MarketData)
+      .useValue(new FakeMarketData())
+      .overrideProvider(NewsFeed)
+      .useValue(new FakeNewsFeed())
+      .compile();
     app = moduleRef.createNestApplication();
     await app.init();
     db = app.get(DB);
@@ -59,6 +65,12 @@ describe('Portfolio (e2e)', () => {
     expect(watches).toMatchObject([{ symbol: 'AI.PA', price: 120 }]);
     const watch = watches[0];
     await http.post('/watches').send({ asset: '' }).expect(400);
+    expect((await http.get(`/watches/${watch.id}/news`).expect(200)).body).toMatchObject({ query: "L'Air Liquide", suggested: true, items: [{ source: 'Exemple' }] });
+    await http.patch(`/watches/${watch.id}`).send({ newsQuery: 'x'.repeat(201) }).expect(400);
+    await http.patch(`/watches/${watch.id}`).send({ newsQuery: ' Air Liquide hydrogène ' }).expect(204);
+    expect((await http.get(`/watches/${watch.id}/news`).expect(200)).body).toMatchObject({ query: 'Air Liquide hydrogène', suggested: false });
+    await http.get(`/watches/${randomUUID()}/news`).expect(404);
+    expect((await http.get('/watches/news').expect(200)).body).toMatchObject([{ assets: [{ symbol: 'AI.PA' }] }]);
     // Déjà suivie depuis l'achat.
     await http.post('/watches').send({ asset: 'AI.PA' }).expect(409);
     expect((await http.get('/watches').expect(200)).body).toHaveLength(1);

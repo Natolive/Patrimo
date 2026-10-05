@@ -4,6 +4,11 @@ import { WatchRepository } from '@src/watchlist/domain/watch.repository.js';
 import { InMemoryRepository } from './in-memory.repository.js';
 
 export class InMemoryWatchRepository extends InMemoryRepository<Watch, NewWatch> implements WatchRepository {
+  // Même défaut que la colonne en base.
+  override create(data: NewWatch) {
+    return super.create({ newsQuery: null, ...data });
+  }
+
   async findByUser(userId: string) {
     return this.rows.filter((w) => w.userId === userId);
   }

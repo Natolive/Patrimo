@@ -42,6 +42,13 @@ Page « Opérations » : un achat ou une vente = valeur (code ISIN de l'avis d'o
 
 Page « Suivi » : suivre une action ou un ETF par son code ISIN sans l'avoir acheté (cours, variations, tendance) ; sa fiche est la même qu'une valeur détenue, sans les montants.
 
+## Actualités
+
+- Accueil : carrousel des actualités de toutes les valeurs suivies (20 plus récentes, chaque dépêche une fois avec les valeurs qu'elle concerne, logo de l'éditeur).
+- Fiche d'une valeur suivie : ses actualités et ses mots-clés, modifiables (vide = revenir à la suggestion).
+- Suggestion : pour une action, le nom de l'entreprise ; pour un ETF, son marché (Nasdaq, Wall Street, marchés émergents, Bourses européennes…), ce qui fait bouger l'indice plutôt que le fonds.
+- Google Actualités (flux RSS public, édition française, 14 derniers jours), gardé 30 minutes ; titres et liens seulement, pas de photo (le flux n'en donne pas). En panne : pas d'actualités, le reste s'affiche.
+
 ## Cours
 
 Yahoo Finance, gratuit et sans clé (API publique non documentée), cours différés gardés 10 minutes en mémoire. Montants additionnés sans conversion de devise (PEA : valeurs en euros). Fournisseur remplaçable derrière `MarketData` (`backend/src/market/`).

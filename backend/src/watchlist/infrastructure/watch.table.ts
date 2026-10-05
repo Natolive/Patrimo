@@ -11,6 +11,7 @@ export const watches = pgTable(
     symbol: text().notNull(),
     name: text().notNull(),
     currency: text().notNull(),
+    newsQuery: text('news_query'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique('watches_user_id_symbol_unique').on(t.userId, t.symbol)],

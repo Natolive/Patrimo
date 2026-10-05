@@ -145,6 +145,8 @@ const reading = computed(() => {
         </UCard>
       </div>
 
+      <NewsCard v-if="data.watchId" :watch-id="data.watchId" />
+
       <UCard v-if="data.purchases.length" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <h2 class="text-highlighted font-semibold">Mes opérations</h2>

@@ -14,6 +14,7 @@ Stack et conventions reprises de `../footix` (son `CLAUDE.md`, `backend/CLAUDE.m
 - Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>`.
 - Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs ; tests avec `FakeMarketData` (aussi en e2e via `overrideProvider`).
 - Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`).
+- Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`, tests avec `FakeNewsFeed`.
 - Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`, testées sans fakes.
 - Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre ; montants via `utils/format.ts`, gain/perte toujours signé.
 - Tests dans `backend/test/`, `npm run test:cov` à 100 %.

@@ -120,5 +120,7 @@ const columns: TableColumn<PositionDto>[] = [
         </UTable>
       </UCard>
     </template>
+
+    <NewsFeed />
   </div>
 </template>

@@ -23,3 +23,12 @@ export const shortDate = (date: string) =>
 
 // Couleur d'un gain ou d'une perte, toujours affichée avec son signe.
 export const gainClass = (value: number) => (value > 0 ? 'text-success' : value < 0 ? 'text-error' : 'text-muted')
+
+// « il y a 3 heures », « hier », « il y a 5 jours ».
+export function ago(date: string, now = Date.now()) {
+  const minutes = Math.round((new Date(date).getTime() - now) / 60_000)
+  const format = new Intl.RelativeTimeFormat('fr-FR', { numeric: 'auto' })
+  if (Math.abs(minutes) < 60) return format.format(minutes, 'minute')
+  if (Math.abs(minutes) < 60 * 24) return format.format(Math.round(minutes / 60), 'hour')
+  return format.format(Math.round(minutes / (60 * 24)), 'day')
+}
