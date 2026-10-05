@@ -8,6 +8,20 @@
       "when": 1791212670611,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791213241550,
+      "tag": "0001_add_purchases",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791213578342,
+      "tag": "0002_add_watches",
+      "breakpoints": true
     }
   ]
 }

@@ -12,5 +12,8 @@ Stack et conventions reprises de `../footix` (son `CLAUDE.md`, `backend/CLAUDE.m
 - Route publique qui teste un mot de passe = `@RateLimit(...)`.
 - Front : pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; formulaire = `FormBuilder` + schéma `@pea/shared` ; compte via `useAuth()`.
 - Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>`.
+- Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs ; tests avec `FakeMarketData` (aussi en e2e via `overrideProvider`).
+- Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`, testées sans fakes.
+- Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre ; montants via `utils/format.ts`, gain/perte toujours signé.
 - Tests dans `backend/test/`, `npm run test:cov` à 100 %.
 - Code en anglais, commentaires et textes d'interface en français. Raccourci assumé = commentaire `ponytail:`.

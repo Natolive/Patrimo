@@ -14,6 +14,12 @@ async function onLogout() {
   await navigateTo('/login')
 }
 
+const nav = [
+  { label: 'Tableau de bord', icon: 'i-lucide-chart-line', to: '/' },
+  { label: 'Achats', icon: 'i-lucide-receipt-euro', to: '/purchases' },
+  { label: 'Suivi', icon: 'i-lucide-eye', to: '/watchlist' },
+]
+
 const fullName = computed(() => `${user.value?.firstName ?? ''} ${user.value?.lastName ?? ''}`.trim())
 
 const menu = computed<DropdownMenuItem[][]>(() => [
@@ -25,14 +31,17 @@ const menu = computed<DropdownMenuItem[][]>(() => [
 <template>
   <div class="min-h-dvh">
     <header class="bg-default/75 border-default sticky top-0 z-40 border-b backdrop-blur-lg">
-      <div class="mx-auto flex h-16 max-w-5xl items-center justify-between gap-2 px-4 sm:px-6">
-        <NuxtLink to="/" class="text-primary text-xl font-bold tracking-tight">PEA</NuxtLink>
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
+        <div class="flex items-center gap-4 sm:gap-8">
+          <NuxtLink to="/" class="text-primary text-xl font-bold tracking-tight">PEA</NuxtLink>
+          <UNavigationMenu :items="nav" />
+        </div>
         <UDropdownMenu :items="menu">
-          <UButton :label="fullName" icon="i-lucide-circle-user-round" color="neutral" variant="ghost" />
+          <UButton :label="fullName" icon="i-lucide-circle-user-round" color="neutral" variant="ghost" :ui="{ label: 'hidden sm:inline' }" aria-label="Mon compte" />
         </UDropdownMenu>
       </div>
     </header>
-    <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <slot />
     </main>
   </div>

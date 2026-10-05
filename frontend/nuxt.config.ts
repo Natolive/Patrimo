@@ -4,6 +4,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   modules: ['@nuxt/ui'],
+  // Thème clair uniquement : la palette des graphiques est validée sur fond clair.
+  ui: { colorMode: false },
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: { apiUrl: '' },

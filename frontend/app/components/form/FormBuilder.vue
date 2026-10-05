@@ -87,6 +87,7 @@ const shaking = ref(false)
             v-model="state[field.name]"
             :type="field.type ?? 'text'"
             :autocomplete="field.autocomplete"
+            :inputmode="field.inputmode"
             :placeholder="field.placeholder"
             :icon="field.icon"
             :disabled="field.disabled"
