@@ -45,9 +45,27 @@ Appli perso de suivi d'un PEA Bourse Direct (opérations, portefeuille, tendance
 - Graphique = `ChartLine` (SVG maison, réticule + infobulle), couleurs `--color-chart-1..3` de `main.css` dans cet ordre.
 - Animation uniquement en réponse à une action (navigation, ajout, changement de période), classes de `main.css` (`page-*`, `flash`, `cascade`) ou `<style scoped>` en fin de fichier, toujours coupée sous `prefers-reduced-motion` ; page à racine unique (transition de page).
 
+## Documentation
+
+`README.md` en deux parties, dans cet ordre :
+
+1. **Pour l'utilisateur** (sans jargon de code) : objectif de l'appli, puis « Ce que fait l'application », une section par page ou usage (Opérations, Tableau de bord, fiche d'une valeur, Suivi, Actualités…), puis « Bon à savoir » (limites, méthodes de calcul en clair).
+2. **Technique** : démarrer, architecture (un point par domaine du back), sources de données (tableau), développement.
+
+À mettre à jour dans la même modification que le code :
+
+| Changement | Où |
+|---|---|
+| Nouvelle page, nouveau champ, nouvelle action à l'écran | README partie 1, section de la page (créer la section si nouvelle page) |
+| Règle de calcul ou limite visible (PRU, tendance, horaires…) | README partie 1, section concernée ou « Bon à savoir » |
+| Nouveau domaine back, nouvelle source de données, nouveau service Docker | README partie 2 (architecture, tableau des sources, adresses) |
+| Nouvelle commande de dev | README partie 2, « Développement » |
+| Nouvelle convention de code, de test ou de front | Ce fichier, section concernée |
+| Fonction retirée ou renommée | Supprimer ou renommer partout (README, ce fichier), jamais laisser un ancien libellé |
+
 ## Avant de dire « fini » ou de commit
 
-- `README.md` à jour dès qu'un comportement visible change ; nouvelle règle ou convention → ce fichier.
+- Documentation à jour selon le tableau ci-dessus (un hook le rappelle avant chaque commit et en fin de réponse s'il reste des changements).
 - `docker compose exec backend npm run test:cov` vert (tests + couverture 100 % des lignes) et `npm run lint` sans erreur.
 - Front modifié = `docker compose exec frontend npm run typecheck` sans erreur, puis vérifié dans le navigateur (le typecheck ne voit pas une erreur de template).
 - Commit en français, une ligne qui dit ce qui change pour l'utilisateur ; dépôt privé `Natolive/PEA`, pas de CI ni de prod.
