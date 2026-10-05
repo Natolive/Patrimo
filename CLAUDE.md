@@ -22,7 +22,8 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 - Table Drizzle dans `<domaine>/infrastructure/*.table.ts`, exportée dans `common/infrastructure/database/schema.ts`, puis `docker compose exec backend npm run db:generate -- --name <nom>` (migrations appliquées au démarrage).
 - Imports relatifs en `.js` (ESM).
 - Pas d'inscription (voulu) : comptes créés par `npm run user:create` (`backend/src/create-user.ts`).
-- Route protégée = `@Authorize()` (guard global `SessionGuard`, 401 sans session), `@CurrentUser()` donne la personne connectée ; sans décorateur, la route est publique. Route publique qui teste un mot de passe = `@RateLimit(...)`.
+- Route protégée = `@Authorize()` (guard global `SessionGuard`, 401 sans session), `@CurrentUser()` donne la personne connectée ; sans décorateur, la route est publique. Route qui teste un mot de passe ou un code 2FA = `@RateLimit(...)`.
+- 2FA : codes TOTP uniquement via `totp.ts` (RFC 6238, testé sur ses vecteurs) et `checkSecondFactor` (code de l'application ou de secours, ce dernier consommé) ; codes de secours toujours hachés (`hashToken`) ; connexion en deux temps via `TwoFactorChallenges` (`POST /auth/login` renvoie `{ user }` ou `{ challenge }`). Action sensible sur le compte (désactiver la 2FA, changer de mot de passe) = mot de passe actuel redemandé.
 - Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs.
 - Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`.
 - Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`) ; toute opération ajoute la valeur à la liste de suivi.
