@@ -56,7 +56,7 @@ const reading = computed(() => {
           <h1 class="text-highlighted text-2xl font-bold tracking-tight">{{ data.name }}</h1>
         </div>
         <div class="text-right">
-          <p class="text-highlighted text-3xl font-semibold">{{ money(data.price, currency) }}</p>
+          <p class="text-highlighted text-3xl font-semibold">{{ unitMoney(data.price, currency) }}</p>
           <p class="font-medium tabular-nums" :class="gainClass(data.dayChangeRate)">{{ percent(data.dayChangeRate) }} aujourd’hui</p>
         </div>
       </div>
@@ -88,7 +88,7 @@ const reading = computed(() => {
             { key: 'sma50', label: 'MM 50 séances', color: 'var(--color-chart-2)', values: points.map((p) => p.sma50) },
             { key: 'sma200', label: 'MM 200 séances', color: 'var(--color-chart-3)', values: points.map((p) => p.sma200) },
           ]"
-          :markers="data.purchases.map((p) => ({ date: p.boughtAt, label: `Achat ${quantity(p.quantity)} × ${money(p.unitPrice, p.currency)}` }))"
+          :markers="data.purchases.map((p) => ({ date: p.boughtAt, label: `Achat ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` }))"
           :reference="data.position ? { value: data.position.averageCost, label: 'PRU' } : undefined"
           :format="(v) => money(v, currency)"
         />
@@ -159,7 +159,7 @@ const reading = computed(() => {
         >
           <template #boughtAt-cell="{ row }">{{ longDate(row.original.boughtAt) }}</template>
           <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
-          <template #unitPrice-cell="{ row }">{{ money(row.original.unitPrice, currency) }}</template>
+          <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, currency) }}</template>
           <template #fees-cell="{ row }">{{ money(row.original.fees, currency) }}</template>
           <template #total-cell="{ row }">{{ money(row.original.total, currency) }}</template>
         </UTable>

@@ -39,13 +39,16 @@ describe('Portfolio (e2e)', () => {
     await http.post('/purchases').send({ asset: 'NOPE', boughtAt: '2026-01-02', quantity: '1', unitPrice: '100', fees: '0' }).expect(404);
     const { body: bought } = await http
       .post('/purchases')
-      .send({ asset: 'FR0000120073', boughtAt: '2026-01-02', quantity: '10', unitPrice: '100,50', fees: '1,99' })
+      .send({ asset: 'FR0000120073', boughtAt: '2026-01-02', quantity: '10', unitPrice: '100,505', fees: '1,99' })
       .expect(201);
-    expect(bought).toMatchObject({ symbol: 'AI.PA', quantity: 10, unitPrice: 100.5, fees: 1.99, total: 1006.99 });
+    // Prix à 3 décimales gardé tel quel.
+    expect(bought).toMatchObject({ symbol: 'AI.PA', quantity: 10, unitPrice: 100.505, fees: 1.99 });
+    expect(bought.total).toBeCloseTo(1007.04);
     expect((await http.get('/purchases').expect(200)).body).toHaveLength(1);
 
     const { body: portfolio } = await http.get('/portfolio').expect(200);
-    expect(portfolio).toMatchObject({ value: 1200, invested: 1006.99, dayChange: 100 });
+    expect(portfolio).toMatchObject({ value: 1200, dayChange: 100 });
+    expect(portfolio.invested).toBeCloseTo(1007.04);
     expect(portfolio.positions[0]).toMatchObject({ symbol: 'AI.PA', weight: 1, trend: { signal: null } });
 
     const { body: asset } = await http.get('/portfolio/AI.PA').expect(200);

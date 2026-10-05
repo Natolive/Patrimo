@@ -23,7 +23,7 @@ puis connexion avec « Rester connecté » (30 jours, sinon 12 h et cookie effac
 
 ## Achats
 
-Page « Achats » : un achat = valeur (code ISIN de l'avis d'opéré Bourse Direct, ou mnémonique), date, quantité (fractions acceptées), prix unitaire et frais, avec virgule ou point. La valeur est retrouvée chez Yahoo Finance (cotation à Paris en priorité) ; son nom s'affiche dans la liste pour vérifier. Pas de vente ni de modification : supprimer puis ressaisir.
+Page « Achats » : un achat = valeur (code ISIN de l'avis d'opéré Bourse Direct, ou mnémonique), date, quantité (fractions acceptées), prix unitaire (jusqu'à 3 décimales, comme sur l'avis d'opéré) et frais, avec virgule ou point. La valeur est retrouvée chez Yahoo Finance (cotation à Paris en priorité) ; son nom s'affiche dans la liste pour vérifier. Pas de vente ni de modification : supprimer puis ressaisir.
 
 ## Tableau de bord
 

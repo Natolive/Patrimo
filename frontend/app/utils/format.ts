@@ -2,6 +2,10 @@
 export const money = (value: number, currency = 'EUR') =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(value)
 
+// Prix d'un titre (cours, prix d'achat) : jusqu'à 3 décimales, comme sur les avis d'opéré.
+export const unitMoney = (value: number, currency = 'EUR') =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 3 }).format(value)
+
 export const signedMoney = (value: number, currency = 'EUR') =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency, signDisplay: 'exceptZero' }).format(value)
 

@@ -22,7 +22,7 @@ const fields: FormFieldConfig<PurchaseInput>[] = [
   },
   { name: 'boughtAt', label: 'Date d’achat', type: 'date', half: true },
   { name: 'quantity', label: 'Quantité', inputmode: 'decimal', placeholder: '10', half: true },
-  { name: 'unitPrice', label: 'Prix unitaire (€)', inputmode: 'decimal', placeholder: '171,58', half: true },
+  { name: 'unitPrice', label: 'Prix unitaire (€)', inputmode: 'decimal', placeholder: '171,585', half: true },
   { name: 'fees', label: 'Frais (€)', inputmode: 'decimal', placeholder: '1,99', help: 'Courtage, TTF…', half: true },
 ]
 
@@ -86,7 +86,7 @@ const columns: TableColumn<PurchaseDto>[] = [
           </NuxtLink>
         </template>
         <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
-        <template #unitPrice-cell="{ row }">{{ money(row.original.unitPrice, row.original.currency) }}</template>
+        <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, row.original.currency) }}</template>
         <template #fees-cell="{ row }">{{ money(row.original.fees, row.original.currency) }}</template>
         <template #total-cell="{ row }"><span class="text-highlighted font-medium">{{ money(row.original.total, row.original.currency) }}</span></template>
         <template #actions-cell="{ row }">

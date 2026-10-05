@@ -83,7 +83,7 @@ const columns: TableColumn<WatchDto>[] = [
           </NuxtLink>
         </template>
         <template #price-cell="{ row }">
-          <span class="block">{{ money(row.original.price, row.original.currency) }}</span>
+          <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
           <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
         </template>
         <template v-for="period in ['1m', '1y'] as const" :key="period" #[`${period}-cell`]="{ row }">

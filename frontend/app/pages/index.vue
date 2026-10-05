@@ -100,7 +100,7 @@ const columns: TableColumn<PositionDto>[] = [
           <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
           <template #averageCost-cell="{ row }">{{ money(row.original.averageCost, row.original.currency) }}</template>
           <template #price-cell="{ row }">
-            <span class="block">{{ money(row.original.price, row.original.currency) }}</span>
+            <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
             <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
           </template>
           <template #value-cell="{ row }">{{ money(row.original.value, row.original.currency) }}</template>
