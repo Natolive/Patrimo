@@ -31,7 +31,7 @@ const menu = computed<DropdownMenuItem[][]>(() => [
 <template>
   <div class="min-h-dvh">
     <header class="bg-default/75 border-default sticky top-0 z-40 border-b backdrop-blur-lg">
-      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:px-6">
+      <div class="mx-auto flex h-16 max-w-[96rem] items-center justify-between gap-2 px-4 sm:px-6">
         <div class="flex items-center gap-4 sm:gap-8">
           <NuxtLink to="/" class="text-primary text-xl font-bold tracking-tight">PEA</NuxtLink>
           <UNavigationMenu :items="nav" />
@@ -41,7 +41,7 @@ const menu = computed<DropdownMenuItem[][]>(() => [
         </UDropdownMenu>
       </div>
     </header>
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <main class="mx-auto max-w-[96rem] px-4 py-8 sm:px-6">
       <slot />
     </main>
   </div>

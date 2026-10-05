@@ -23,7 +23,8 @@ const columns: TableColumn<PositionDto>[] = [
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon PEA</h1>
@@ -120,7 +121,11 @@ const columns: TableColumn<PositionDto>[] = [
         </UTable>
       </UCard>
     </template>
+    </div>
 
-    <NewsFeed />
+    <!-- Bandeau latéral sur grand écran (reste visible au défilement), sous le tableau de bord sinon. -->
+    <aside class="xl:sticky xl:top-22">
+      <NewsFeed />
+    </aside>
   </div>
 </template>
