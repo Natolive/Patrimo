@@ -29,6 +29,7 @@ const columns: TableColumn<PositionDto>[] = [
       <div>
         <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon PEA</h1>
         <p class="text-muted mt-1">Cours différés, mis à jour toutes les 10 minutes.</p>
+        <MarketClock class="mt-3" />
       </div>
       <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" />
     </div>

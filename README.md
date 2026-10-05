@@ -42,6 +42,10 @@ Page « Opérations » : un achat ou une vente = valeur (code ISIN de l'avis d'o
 
 Page « Suivi » : suivre une action ou un ETF par son code ISIN sans l'avoir acheté (cours, variations, tendance) ; sa fiche est la même qu'une valeur détenue, sans les montants.
 
+## Marchés
+
+En tête de l'accueil : Euronext Paris (9 h – 17 h 30, où se traitent les ETF du PEA) et Wall Street (9 h 30 – 16 h à New York, soit 15 h 30 – 22 h à Paris la plupart de l'année), ouverte ou fermée, avec l'heure et le délai du prochain changement, en heure locale. Calculé sans API (fuseaux, heure d'été, week-ends, jours fériés dont Pâques et fêtes américaines reportées) dans `shared/src/markets/market-hours.ts` ; séances raccourcies des veilles de fêtes ignorées.
+
 ## Actualités
 
 - Accueil : bandeau latéral (à droite sur grand écran, sous le tableau de bord sinon) avec les actualités de toutes les valeurs suivies (20 plus récentes, chaque dépêche une fois avec les valeurs qu'elle concerne, logo de l'éditeur).
