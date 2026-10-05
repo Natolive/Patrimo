@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
-import { purchaseSchema, type PurchaseDto, type SavePurchaseDto, type UserDto } from '@patrimo/shared';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { purchaseSchema, purchasesQuerySchema, type PageDto, type PurchaseDto, type PurchasesQueryDto, type SavePurchaseDto, type UserDto } from '@patrimo/shared';
 import { Authorize } from '../../../auth/infrastructure/http/authorize.decorator.js';
 import { CurrentUser } from '../../../auth/infrastructure/http/current-user.decorator.js';
 import { ZodValidationPipe } from '../../../common/infrastructure/http/pipes/zod-validation.pipe.js';
@@ -17,8 +17,8 @@ export class PurchasesController {
 
   @Get()
   @Authorize()
-  findAll(@CurrentUser() user: UserDto): Promise<PurchaseDto[]> {
-    return this.findPurchasesService.execute(user);
+  findAll(@CurrentUser() user: UserDto, @Query(new ZodValidationPipe(purchasesQuerySchema)) query: PurchasesQueryDto): Promise<PageDto<PurchaseDto>> {
+    return this.findPurchasesService.execute(user, query);
   }
 
   @Post()

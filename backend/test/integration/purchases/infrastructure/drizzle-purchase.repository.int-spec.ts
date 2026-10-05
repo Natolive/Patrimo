@@ -21,7 +21,14 @@ describe('DrizzlePurchaseRepository', () => {
     await purchases.create({ ...base, boughtAt: '2026-03-02' });
     await purchases.create({ ...base, boughtAt: '2026-01-15' });
 
-    const found = await purchases.findByUser(userId);
+    await purchases.create({ ...base, symbol: 'CW8.PA', boughtAt: '2026-02-01' });
+    expect(await purchases.findPageByUser(userId, { offset: 0, limit: 2 })).toMatchObject({
+      total: 3,
+      items: [{ boughtAt: '2026-03-02' }, { boughtAt: '2026-02-01' }],
+    });
+    expect(await purchases.findPageByUser(userId, { offset: 0, limit: 20, symbol: 'AI.PA' })).toMatchObject({ total: 2, items: [{ boughtAt: '2026-03-02' }, { boughtAt: '2026-01-15' }] });
+
+    const found = (await purchases.findByUser(userId)).filter((p) => p.symbol === 'AI.PA');
     expect(found.map((p) => p.boughtAt)).toEqual(['2026-01-15', '2026-03-02']);
     expect(found[0]).toMatchObject({ quantity: 0.5, unitPrice: 171.58, fees: 1.99 });
   });

@@ -33,8 +33,18 @@ describe('Watchlist', () => {
     const watch = await app.create.execute(lea, { asset: 'FR0000120073' });
     expect(watch).toMatchObject({ id: '1', symbol: 'AI.PA', name: "L'Air Liquide S.A.", price: 120 });
     expect(watch.dayChangeRate).toBeCloseTo(120 / 110 - 1);
-    expect(await app.find.execute(lea)).toEqual([watch]);
-    expect(await app.find.execute(max)).toEqual([]);
+    expect(await app.find.execute(lea, { offset: 0, limit: 20 })).toEqual({ items: [watch], total: 1 });
+    expect(await app.find.execute(max, { offset: 0, limit: 20 })).toEqual({ items: [], total: 0 });
+  });
+
+  it('quotes only the requested page, in the order the values were followed', async () => {
+    const app = setup();
+    app.market.instruments.push({ symbol: 'CW8.PA', isin: 'LU1681043599', name: 'Amundi MSCI World', currency: 'EUR' });
+    app.market.histories.set('CW8.PA', [{ date: '2026-01-06', close: 400 }]);
+    await app.create.execute(lea, { asset: 'AI.PA' });
+    await app.create.execute(lea, { asset: 'CW8.PA' });
+    const page = await app.find.execute(lea, { offset: 1, limit: 1 });
+    expect(page).toMatchObject({ total: 2, items: [{ symbol: 'CW8.PA', price: 400 }] });
   });
 
   it('refuses an unknown value or one already followed', async () => {

@@ -52,7 +52,9 @@ describe('Portfolio (e2e)', () => {
     // Prix à 3 décimales gardé tel quel.
     expect(bought).toMatchObject({ symbol: 'AI.PA', quantity: 10, unitPrice: 100.505, fees: 1.99 });
     expect(bought.total).toBeCloseTo(1007.04);
-    expect((await http.get('/purchases').expect(200)).body).toHaveLength(1);
+    expect((await http.get('/purchases').expect(200)).body).toMatchObject({ total: 1, items: [{ id: bought.id }] });
+    expect((await http.get('/purchases?symbol=CW8.PA').expect(200)).body).toEqual({ total: 0, items: [] });
+    await http.get('/purchases?limit=500').expect(400);
 
     const { body: portfolio } = await http.get('/portfolio').expect(200);
     expect(portfolio).toMatchObject({ value: 1200, dayChange: 100 });
@@ -63,9 +65,10 @@ describe('Portfolio (e2e)', () => {
     expect(asset.points).toHaveLength(3);
     await http.get('/portfolio/CW8.PA').expect(404);
 
-    const { body: watches } = await http.get('/watches').expect(200);
-    expect(watches).toMatchObject([{ symbol: 'AI.PA', price: 120 }]);
-    const watch = watches[0];
+    const { body: watches } = await http.get('/watches?limit=10').expect(200);
+    expect(watches).toMatchObject({ total: 1, items: [{ symbol: 'AI.PA', price: 120 }] });
+    const watch = watches.items[0];
+    await http.get('/watches?offset=-1').expect(400);
     await http.post('/watches').send({ asset: '' }).expect(400);
     expect((await http.get(`/watches/${watch.id}/news`).expect(200)).body).toMatchObject({ query: "L'Air Liquide", suggested: true, items: [{ source: 'Exemple' }] });
     await http.patch(`/watches/${watch.id}`).send({ newsQuery: 'x'.repeat(201) }).expect(400);
@@ -75,7 +78,7 @@ describe('Portfolio (e2e)', () => {
     expect((await http.get('/watches/news').expect(200)).body).toMatchObject([{ assets: [{ symbol: 'AI.PA' }] }]);
     // Déjà suivie depuis l'achat.
     await http.post('/watches').send({ asset: 'AI.PA' }).expect(409);
-    expect((await http.get('/watches').expect(200)).body).toHaveLength(1);
+    expect((await http.get('/watches').expect(200)).body.total).toBe(1);
     expect((await http.get('/portfolio/AI.PA').expect(200)).body.watchId).toBe(watch.id);
     await http.delete(`/watches/${randomUUID()}`).expect(404);
     await http.delete(`/watches/${watch.id}`).expect(204);

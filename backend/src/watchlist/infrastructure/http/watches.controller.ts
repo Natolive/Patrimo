@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import { updateWatchSchema, watchSchema, type SaveWatchDto, type FeedItemDto, type UpdateWatchDto, type UserDto, type WatchDto, type WatchNewsDto } from '@patrimo/shared';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { pageQuerySchema, updateWatchSchema, watchSchema, type PageDto, type PageQueryDto, type SaveWatchDto, type FeedItemDto, type UpdateWatchDto, type UserDto, type WatchDto, type WatchNewsDto } from '@patrimo/shared';
 import { Authorize } from '../../../auth/infrastructure/http/authorize.decorator.js';
 import { CurrentUser } from '../../../auth/infrastructure/http/current-user.decorator.js';
 import { ZodValidationPipe } from '../../../common/infrastructure/http/pipes/zod-validation.pipe.js';
@@ -23,8 +23,8 @@ export class WatchesController {
 
   @Get()
   @Authorize()
-  findAll(@CurrentUser() user: UserDto): Promise<WatchDto[]> {
-    return this.findWatchesService.execute(user);
+  findAll(@CurrentUser() user: UserDto, @Query(new ZodValidationPipe(pageQuerySchema)) query: PageQueryDto): Promise<PageDto<WatchDto>> {
+    return this.findWatchesService.execute(user, query);
   }
 
   @Post()

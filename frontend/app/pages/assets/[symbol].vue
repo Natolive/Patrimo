@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TRADE_SIDE_LABELS, type AssetDto, type TrendPeriod } from '@patrimo/shared'
+import { TRADE_SIDE_LABELS, type AssetDto, type PurchaseDto, type TrendPeriod } from '@patrimo/shared'
 
 const route = useRoute()
 const symbol = computed(() => String(route.params.symbol))
@@ -10,6 +10,8 @@ useHead({ title: () => data.value?.name ?? symbol.value })
 const range = ref<RangeLabel>('1A')
 const points = computed(() => inRange(data.value?.points ?? [], range.value))
 const currency = computed(() => data.value?.currency ?? 'EUR')
+// Tableau « Mes opérations » chargé page par page ; la courbe garde toutes les opérations (repères).
+const trades = usePaginatedList<PurchaseDto>('/purchases', () => ({ symbol: symbol.value }))
 const markers = computed(() =>
   (data.value?.purchases ?? []).map((p) => ({ date: p.boughtAt, label: `${TRADE_SIDE_LABELS[p.side]} ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` })),
 )
@@ -151,7 +153,8 @@ const reading = computed(() => {
             <h2 class="text-highlighted font-semibold">Mes opérations</h2>
           </template>
           <UTable
-            :data="data.purchases"
+            v-if="trades.items.value.length"
+            :data="trades.items.value"
             :columns="[
               { accessorKey: 'boughtAt', header: 'Date' },
               { accessorKey: 'side', header: 'Opération' },
@@ -169,6 +172,8 @@ const reading = computed(() => {
             <template #fees-cell="{ row }">{{ money(row.original.fees, currency) }}</template>
             <template #total-cell="{ row }">{{ money(row.original.total, currency) }}</template>
           </UTable>
+          <ListSkeleton v-if="trades.loading.value" :rows="trades.items.value.length ? 2 : 4" />
+          <ListSentinel :active="!trades.loading.value && !trades.done.value && !trades.error.value" @visible="trades.loadMore" />
         </UCard>
       </template>
     </div>

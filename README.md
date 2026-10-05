@@ -22,7 +22,7 @@ Pour chaque achat ou vente de son avis d'opéré (le document que le courtier en
 | Frais | 0 | Courtage ; le total de l'avis d'opéré moins quantité × prix |
 
 - Une vente ne peut porter que sur des titres détenus à sa date.
-- Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste des opérations (de même pour « Suivre une valeur »).
+- La liste se charge au fil du défilement, 20 opérations à la fois, avec des lignes fantômes pendant le chargement (de même pour les valeurs suivies et les opérations d'une fiche). Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste (de même pour « Suivre une valeur »).
 - Pas de modification : supprimer l'opération puis la ressaisir. Un achat dont dépend une vente ne se supprime qu'après elle.
 - Les virements et les espèces du compte ne sont pas suivis.
 

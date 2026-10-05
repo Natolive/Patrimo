@@ -7,7 +7,8 @@ useHead({ title: 'Suivi' })
 
 const api = useApi()
 const toast = useToast()
-const { data: watches, error, refresh } = await useAsyncData('watches', () => api<WatchDto[]>('/watches'))
+// Chargées page par page au défilement (les cours ne sont demandés que pour la page).
+const { items: watches, loading, error, done, loadMore, reset } = usePaginatedList<WatchDto>('/watches')
 
 const state = ref<SaveWatchDto>({ asset: '' })
 const fields: FormFieldConfig<SaveWatchDto>[] = [
@@ -27,7 +28,7 @@ async function follow(dto: SaveWatchDto) {
     return
   }
   state.value = { asset: '' }
-  await refresh()
+  await reset()
 }
 
 const removing = ref<WatchDto>()
@@ -41,7 +42,7 @@ async function unfollow() {
   }
   removing.value = undefined
   toast.add({ title: 'Suivi arrêté', description: watch.name, color: 'success', icon: 'i-lucide-check' })
-  await refresh()
+  await reset()
 }
 
 const right = { th: 'text-right', td: 'text-right' }
@@ -71,21 +72,15 @@ const columns: TableColumn<WatchDto>[] = [
       <template #header>
         <h2 class="text-highlighted font-semibold">Valeurs suivies</h2>
       </template>
-      <UAlert
-        v-if="error"
-        color="error"
-        variant="subtle"
-        icon="i-lucide-circle-alert"
-        title="Cours indisponibles"
-        :description="apiErrorMessage(error)"
-        class="m-4 w-auto"
-      />
+      <!-- Tableau affiché dès la première page ; avant, seulement les lignes fantômes. -->
       <UTable
-        v-else
-        :data="watches ?? []"
+        v-if="watches.length || done"
+        :data="watches"
         :columns="columns"
         :meta="{ class: { tr: (row) => (row.original.id === added ? 'flash' : '') } }"
-        class="tabular-nums" empty="Aucune valeur suivie : ajoute-en une avec son code ISIN.">
+        class="tabular-nums"
+        empty="Aucune valeur suivie : ajoute-en une avec son code ISIN."
+      >
         <template #name-cell="{ row }">
           <NuxtLink :to="`/assets/${encodeURIComponent(row.original.symbol)}`" class="group block max-w-56">
             <span class="text-highlighted block truncate font-medium group-hover:text-primary">{{ row.original.name }}</span>
@@ -110,6 +105,18 @@ const columns: TableColumn<WatchDto>[] = [
           <UButton icon="i-lucide-eye-off" color="neutral" variant="ghost" :aria-label="`Ne plus suivre ${row.original.name}`" @click="removing = row.original" />
         </template>
       </UTable>
+      <ListSkeleton v-if="loading" :rows="watches.length ? 3 : 8" />
+      <UAlert
+        v-if="error"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-circle-alert"
+        title="Cours indisponibles"
+        :description="apiErrorMessage(error)"
+        :actions="[{ label: 'Réessayer', color: 'error', variant: 'outline', onClick: () => loadMore() }]"
+        class="m-4 w-auto"
+      />
+      <ListSentinel :active="!loading && !done && !error" @visible="loadMore" />
     </UCard>
 
     <UModal :open="!!removing" title="Ne plus suivre cette valeur ?" @update:open="(open) => !open && (removing = undefined)">

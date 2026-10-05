@@ -7,7 +7,8 @@ useHead({ title: 'Opérations' })
 
 const api = useApi()
 const toast = useToast()
-const { data: purchases, refresh } = await useAsyncData('purchases', () => api<PurchaseDto[]>('/purchases'))
+// Chargées page par page au défilement.
+const { items: purchases, loading, error, done, loadMore, reset } = usePaginatedList<PurchaseDto>('/purchases')
 
 const today = () => new Date().toISOString().slice(0, 10)
 const empty = (): PurchaseInput => ({ side: 'buy', asset: '', boughtAt: today(), quantity: '', unitPrice: '', fees: '0' })
@@ -45,7 +46,7 @@ async function add(dto: SavePurchaseDto) {
     return
   }
   state.value = empty()
-  await refresh()
+  await reset()
 }
 
 // Suppression confirmée dans une modale qui dit ce qui part.
@@ -60,7 +61,7 @@ async function remove() {
   }
   removing.value = undefined
   toast.add({ title: 'Opération supprimée', description: purchase.name, color: 'success', icon: 'i-lucide-check' })
-  await refresh()
+  await reset()
 }
 
 const columns: TableColumn<PurchaseDto>[] = [
@@ -89,11 +90,15 @@ const columns: TableColumn<PurchaseDto>[] = [
       <template #header>
         <h2 class="text-highlighted font-semibold">Mes opérations</h2>
       </template>
+      <!-- Tableau affiché dès la première page ; avant, seulement les lignes fantômes. -->
       <UTable
-        :data="purchases ?? []"
+        v-if="purchases.length || done"
+        :data="purchases"
         :columns="columns"
         :meta="{ class: { tr: (row) => (row.original.id === added ? 'flash' : '') } }"
-        class="tabular-nums" empty="Aucune opération pour l’instant : ajoute ton premier achat avec le formulaire.">
+        class="tabular-nums"
+        empty="Aucune opération pour l’instant : ajoute ton premier achat avec le formulaire."
+      >
         <template #boughtAt-cell="{ row }">{{ shortDate(row.original.boughtAt) }}</template>
         <template #side-cell="{ row }">
           <UBadge
@@ -117,6 +122,18 @@ const columns: TableColumn<PurchaseDto>[] = [
           <UButton icon="i-lucide-trash-2" color="neutral" variant="ghost" :aria-label="`Supprimer l’opération sur ${row.original.name}`" @click="removing = row.original" />
         </template>
       </UTable>
+      <ListSkeleton v-if="loading" :rows="purchases.length ? 3 : 8" />
+      <UAlert
+        v-if="error"
+        color="error"
+        variant="subtle"
+        icon="i-lucide-circle-alert"
+        title="Opérations indisponibles"
+        :description="apiErrorMessage(error)"
+        :actions="[{ label: 'Réessayer', color: 'error', variant: 'outline', onClick: () => loadMore() }]"
+        class="m-4 w-auto"
+      />
+      <ListSentinel :active="!loading && !done && !error" @visible="loadMore" />
     </UCard>
 
     <UModal :open="!!removing" title="Supprimer l’opération ?" @update:open="(open) => !open && (removing = undefined)">

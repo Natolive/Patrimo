@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserDto, WatchDto } from '@patrimo/shared';
+import type { PageDto, PageQueryDto, UserDto, WatchDto } from '@patrimo/shared';
 import { MarketData } from '../../market/domain/market-data.js';
 import { buildQuote } from '../../portfolio/domain/build-quote.js';
 import { toWatchDto } from '../domain/to-watch-dto.js';
@@ -12,8 +12,12 @@ export class FindWatchesService {
     private readonly market: MarketData,
   ) {}
 
-  async execute(user: UserDto): Promise<WatchDto[]> {
+  // Page de valeurs suivies, par ordre d'ajout : seuls les cours de la page sont demandés.
+  // ponytail: page découpée en mémoire (quelques dizaines de valeurs par personne) ; en base si les listes deviennent longues.
+  async execute(user: UserDto, { offset, limit }: PageQueryDto): Promise<PageDto<WatchDto>> {
     const watches = await this.watches.findByUser(user.id);
-    return Promise.all(watches.map(async (w) => toWatchDto(w, buildQuote(await this.market.history(w.symbol)))));
+    const page = watches.slice(offset, offset + limit);
+    const items = await Promise.all(page.map(async (w) => toWatchDto(w, buildQuote(await this.market.history(w.symbol)))));
+    return { items, total: watches.length };
   }
 }
