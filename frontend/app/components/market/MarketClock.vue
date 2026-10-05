@@ -39,7 +39,7 @@ function countdown(date: Date) {
 }
 
 type State = 'open' | 'lunch' | 'closed'
-interface Chip { name: string, state: State, detail: string }
+interface Chip { name: string, state: State, detail: string, region?: string }
 const BADGES: Record<State, { label: string, color: 'success' | 'warning' | 'neutral', icon: string }> = {
   open: { label: 'Ouvert', color: 'success', icon: 'i-lucide-circle-play' },
   lunch: { label: 'Pause', color: 'warning', icon: 'i-lucide-coffee' },
@@ -67,29 +67,41 @@ const asia = computed<Chip[]>(() =>
     // Séance du jour finie : prochaine ouverture habituelle, sous réserve d'un jour férié.
     else if (lastSession === today) detail = `ouvre normalement ${when(guess!)}à ${time(guess!)}`
     else detail = `jour férié · dernière séance le ${new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(lastSession))}`
-    return [{ name: market.name, state, detail }]
+    return [{ name: market.name, state, detail, region: 'Asie' }]
   }),
 )
+
+const chips = computed(() => [...main.value, ...asia.value])
+
+// Défilement continu (seule animation permanente de l'appli, demandée) : s'arrête au survol, immobile sous prefers-reduced-motion.
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const autoScroll = reducedMotion ? false : { speed: 0.5, startDelay: 0, stopOnInteraction: false, stopOnMouseEnter: true }
 </script>
 
 <template>
-  <div class="space-y-2" role="group" aria-label="Ouverture des marchés">
-    <ul class="flex flex-wrap gap-2">
-      <li v-for="m in main" :key="m.name" class="border-default bg-default flex items-center gap-2 rounded-full border py-1 ps-1.5 pe-3 text-sm">
-        <UBadge v-bind="BADGES[m.state]" variant="subtle" class="rounded-full" />
-        <span class="text-highlighted font-medium">{{ m.name }}</span>
-        <span class="text-muted">{{ m.detail }}</span>
-      </li>
-    </ul>
-    <div v-if="asia.length" class="flex flex-wrap items-center gap-2">
-      <span class="text-muted text-xs font-medium">Asie · ETF Émergents</span>
-      <ul class="flex flex-wrap gap-2">
-        <li v-for="m in asia" :key="m.name" class="border-default bg-default flex items-center gap-2 rounded-full border py-0.5 ps-1 pe-2.5 text-xs">
-          <UBadge v-bind="BADGES[m.state]" variant="subtle" size="sm" class="rounded-full" />
-          <span class="text-highlighted font-medium">{{ m.name }}</span>
-          <span class="text-muted">{{ m.detail }}</span>
-        </li>
-      </ul>
+  <UCarousel
+    v-slot="{ item }"
+    :items="chips"
+    loop
+    drag-free
+    :auto-scroll="autoScroll"
+    :ui="{ item: 'basis-auto ps-2', container: '-ms-2' }"
+    class="ticker"
+    role="group"
+    aria-label="Ouverture des marchés"
+  >
+    <div class="border-default bg-default flex items-center gap-2 rounded-full border py-1 ps-1.5 pe-3 text-sm whitespace-nowrap">
+      <UBadge v-bind="BADGES[item.state]" variant="subtle" class="rounded-full" />
+      <span v-if="item.region" class="text-dimmed text-xs font-medium uppercase">{{ item.region }}</span>
+      <span class="text-highlighted font-medium">{{ item.name }}</span>
+      <span class="text-muted">{{ item.detail }}</span>
     </div>
-  </div>
+  </UCarousel>
 </template>
+
+<style scoped>
+/* Bords estompés : les puces entrent et sortent en fondu. */
+.ticker {
+  mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+}
+</style>

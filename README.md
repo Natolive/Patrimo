@@ -31,7 +31,7 @@ Pour chaque achat ou vente de son avis d'opéré (le document que le courtier en
 - **Investi, frais compris** et **plus-values réalisées** par les ventes.
 - **Évolution du portefeuille** : valorisation face au montant investi, jour après jour depuis la première opération (1 mois à tout l'historique).
 - **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance.
-- **Marchés** : Euronext Paris (où s'échangent les actions et ETF européens) et Wall Street, ouverts ou fermés, avec l'heure du prochain changement ; en dessous, les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul), pause de midi et jours fériés compris.
+- **Marchés** : bandeau qui défile en boucle (il s'arrête au survol et se fait glisser à la main) avec Euronext Paris (où s'échangent les actions et ETF européens), Wall Street et les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul) : ouvertes, en pause de midi ou fermées, avec l'heure du prochain changement, jours fériés compris.
 - **Actualités** : bandeau latéral avec les articles récents sur toutes les valeurs suivies.
 
 ### 3. Comprendre une valeur — fiche (clic sur son nom)
