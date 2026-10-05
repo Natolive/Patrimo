@@ -109,7 +109,7 @@ const tooltip = computed(() => {
       </span>
       <span v-if="reference" class="flex items-center gap-2"><span class="h-px w-4 bg-(--ui-text-muted)" />{{ reference.label }}</span>
       <span v-if="markerPoints.length" class="flex items-center gap-2">
-        <span class="size-2.5 rounded-full border-2 border-(--ui-bg) bg-(--ui-text-highlighted) ring-1 ring-(--ui-text-highlighted)" />Achats
+        <span class="size-2.5 rounded-full border-2 border-(--ui-bg) bg-(--ui-text-highlighted) ring-1 ring-(--ui-text-highlighted)" />Opérations
       </span>
     </figcaption>
 
@@ -173,7 +173,7 @@ const tooltip = computed(() => {
         <span class="text-muted">{{ row.label }}</span>
       </p>
       <p v-for="m in tooltip.markers" :key="m.label" class="text-highlighted mt-2 flex items-center gap-2 font-medium">
-        <UIcon name="i-lucide-shopping-cart" class="size-4" />{{ m.label }}
+        <UIcon name="i-lucide-receipt-euro" class="size-4" />{{ m.label }}
       </p>
     </div>
   </figure>

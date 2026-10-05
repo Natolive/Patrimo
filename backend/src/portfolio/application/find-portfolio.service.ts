@@ -21,17 +21,20 @@ export class FindPortfolioService {
     const histories = new Map(await Promise.all(symbols.map(async (s) => [s, await this.market.history(s)] as const)));
     const lines = symbols.map((s) => buildPosition(purchases.filter((p) => p.symbol === s), histories.get(s)!));
 
-    const value = sum(lines.map((l) => l.value));
-    const invested = sum(lines.map((l) => l.invested));
-    const dayChange = sum(lines.map((l) => l.dayChange));
+    // Lignes soldées : seulement leur plus-value réalisée.
+    const open = lines.filter((l) => l.quantity > 0);
+    const value = sum(open.map((l) => l.value));
+    const invested = sum(open.map((l) => l.invested));
+    const dayChange = sum(open.map((l) => l.dayChange));
     return {
       invested,
       value,
       gain: value - invested,
       gainRate: invested ? value / invested - 1 : 0,
+      realizedGain: sum(lines.map((l) => l.realizedGain)),
       dayChange,
       dayChangeRate: value ? dayChange / (value - dayChange) : 0,
-      positions: lines.map((l) => ({ ...l, weight: l.value / value })).sort((a, b) => b.value - a.value),
+      positions: open.map((l) => ({ ...l, weight: l.value / value })).sort((a, b) => b.value - a.value),
       history: portfolioHistory(purchases, histories),
     };
   }

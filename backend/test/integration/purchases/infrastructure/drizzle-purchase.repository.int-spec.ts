@@ -17,7 +17,7 @@ describe('DrizzlePurchaseRepository', () => {
 
   it('keeps exact amounts as numbers and lists my purchases oldest first', async () => {
     const { id: userId } = await new DrizzleUserRepository(db).create(person(email));
-    const base = { userId, symbol: 'AI.PA', name: 'Air Liquide', currency: 'EUR', quantity: 0.5, unitPrice: 171.58, fees: 1.99 };
+    const base = { side: 'buy' as const, userId, symbol: 'AI.PA', name: 'Air Liquide', currency: 'EUR', quantity: 0.5, unitPrice: 171.58, fees: 1.99 };
     await purchases.create({ ...base, boughtAt: '2026-03-02' });
     await purchases.create({ ...base, boughtAt: '2026-01-15' });
 

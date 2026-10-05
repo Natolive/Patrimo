@@ -2,6 +2,7 @@ import type { Purchase } from '@src/purchases/domain/purchase.entity.js';
 
 export const bought = (data: Partial<Purchase>): Purchase => ({
   id: '1',
+  side: 'buy',
   userId: 'lea',
   symbol: 'AI.PA',
   name: 'Air Liquide',

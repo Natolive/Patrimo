@@ -28,6 +28,23 @@ describe('portfolioHistory', () => {
     ]);
   });
 
+  it('drops what is sold at its average cost', () => {
+    const histories = new Map([
+      [
+        'AI.PA',
+        [
+          { date: '2026-01-02', close: 100 },
+          { date: '2026-01-05', close: 120 },
+        ],
+      ],
+    ]);
+    const trades = [bought({ quantity: 10, unitPrice: 100 }), bought({ side: 'sell', boughtAt: '2026-01-05', quantity: 4, unitPrice: 120 })];
+    expect(portfolioHistory(trades, histories)).toEqual([
+      { date: '2026-01-02', value: 1000, invested: 1000 },
+      { date: '2026-01-05', value: 720, invested: 600 },
+    ]);
+  });
+
   it('is empty without purchases', () => {
     expect(portfolioHistory([], new Map())).toEqual([]);
   });

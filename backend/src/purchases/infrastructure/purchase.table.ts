@@ -1,6 +1,10 @@
-import { date, index, numeric, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { TRADE_SIDES } from '@pea/shared';
+import { date, index, numeric, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../../users/infrastructure/user.table.js';
 
+export const tradeSide = pgEnum('trade_side', TRADE_SIDES);
+
+// Achats et ventes ; table nommée avant l'ajout des ventes.
 export const purchases = pgTable(
   'purchases',
   {
@@ -8,6 +12,7 @@ export const purchases = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    side: tradeSide().notNull().default('buy'),
     symbol: text().notNull(),
     name: text().notNull(),
     currency: text().notNull(),

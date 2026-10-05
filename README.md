@@ -21,9 +21,14 @@ docker compose exec backend npm run user:create -- <email> <mot de passe> <prén
 
 puis connexion avec « Rester connecté » (30 jours, sinon 12 h et cookie effacé à la fermeture du navigateur), déconnexion. Toutes les pages sauf la connexion demandent d'être connecté. Connexion limitée à 10 essais par email en 15 min.
 
-## Achats
+## Opérations
 
-Page « Achats » : un achat = valeur (code ISIN de l'avis d'opéré Bourse Direct, ou mnémonique), date, quantité (fractions acceptées), prix unitaire (jusqu'à 3 décimales, comme sur l'avis d'opéré) et frais, avec virgule ou point. La valeur est retrouvée chez Yahoo Finance (cotation à Paris en priorité) ; son nom s'affiche dans la liste pour vérifier. Pas de vente ni de modification : supprimer puis ressaisir.
+Page « Opérations » : un achat ou une vente = valeur (code ISIN de l'avis d'opéré Bourse Direct, ou mnémonique), date, quantité (fractions acceptées), prix unitaire (jusqu'à 3 décimales, comme sur l'avis d'opéré) et frais, avec virgule ou point. La valeur est retrouvée chez Yahoo Finance (cotation à Paris en priorité) ; son nom s'affiche dans la liste pour vérifier. Pas de modification : supprimer puis ressaisir. Toute opération ajoute la valeur à la liste de suivi.
+
+- Prix de revient unitaire (PRU) au prix moyen pondéré, frais d'achat compris : une vente ne le change pas, elle sort sa part du coût et la différence (frais de vente déduits) est la plus-value réalisée.
+- Une vente ne peut porter que sur des titres détenus à sa date (achats avant ventes le même jour) ; un achat dont dépend une vente ne se supprime qu'après elle.
+- Ligne entièrement vendue : retirée des positions, sa plus-value réalisée reste dans le total.
+- Virements et espèces non suivis.
 
 ## Tableau de bord
 

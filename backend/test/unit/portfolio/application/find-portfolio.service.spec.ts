@@ -2,7 +2,6 @@ import { FindAssetService } from '@src/portfolio/application/find-asset.service.
 import { FindPortfolioService } from '@src/portfolio/application/find-portfolio.service.js';
 import { AssetNotTrackedError } from '@src/portfolio/domain/errors/asset-not-tracked.error.js';
 import { CreateWatchService } from '@src/watchlist/application/create-watch.service.js';
-import { InMemoryWatchRepository } from '@test/fakes/in-memory-watch.repository.js';
 import { lea, max, purchase, setupPurchases } from '../../purchases/application/setup.js';
 
 function setup() {
@@ -13,12 +12,11 @@ function setup() {
     { date: '2026-01-06', close: 400 },
   ]);
   const portfolio = new FindPortfolioService(app.purchases, app.market);
-  const watches = new InMemoryWatchRepository();
   return {
     ...app,
     portfolio,
-    watch: new CreateWatchService(watches, app.market),
-    asset: new FindAssetService(portfolio, app.purchases, watches, app.market),
+    watch: new CreateWatchService(app.watches, app.market),
+    asset: new FindAssetService(portfolio, app.purchases, app.watches, app.market),
   };
 }
 
@@ -30,7 +28,7 @@ describe('FindPortfolioService', () => {
     await app.create.execute(max, purchase);
 
     const portfolio = await app.portfolio.execute(lea);
-    expect(portfolio).toMatchObject({ invested: 1502, value: 1600, gain: 98, dayChange: 0 });
+    expect(portfolio).toMatchObject({ invested: 1502, value: 1600, gain: 98, dayChange: 0, realizedGain: 0 });
     expect(portfolio.gainRate).toBeCloseTo(98 / 1502);
     expect(portfolio.positions.map((p) => [p.symbol, p.weight])).toEqual([
       ['AI.PA', 0.75],
@@ -39,9 +37,19 @@ describe('FindPortfolioService', () => {
     expect(portfolio.history.at(-1)).toEqual({ date: '2026-01-06', value: 1600, invested: 1502 });
   });
 
+  it('leaves closed lines out of the positions but keeps their realized gain', async () => {
+    const app = setup();
+    await app.create.execute(lea, purchase);
+    await app.create.execute(lea, { ...purchase, side: 'sell', boughtAt: '2026-01-06', unitPrice: 120, fees: 0 });
+    const portfolio = await app.portfolio.execute(lea);
+    expect(portfolio).toMatchObject({ value: 0, invested: 0, realizedGain: 198, positions: [] });
+    // Toujours suivie : sa fiche reste ouverte, sans position.
+    expect(await app.asset.execute(lea, 'AI.PA')).toMatchObject({ position: null, purchases: [{ side: 'sell' }, { side: 'buy' }] });
+  });
+
   it('is empty without purchases', async () => {
     expect(await setup().portfolio.execute(lea)).toEqual({
-      invested: 0, value: 0, gain: 0, gainRate: 0, dayChange: 0, dayChangeRate: 0, positions: [], history: [],
+      invested: 0, value: 0, gain: 0, gainRate: 0, realizedGain: 0, dayChange: 0, dayChangeRate: 0, positions: [], history: [],
     });
   });
 });
@@ -52,7 +60,7 @@ describe('FindAssetService', () => {
     await app.create.execute(lea, purchase);
     await app.create.execute(lea, { ...purchase, asset: 'CW8.PA' });
     const asset = await app.asset.execute(lea, 'AI.PA');
-    expect(asset).toMatchObject({ symbol: 'AI.PA', name: "L'Air Liquide S.A.", price: 120, watchId: null });
+    expect(asset).toMatchObject({ symbol: 'AI.PA', name: "L'Air Liquide S.A.", price: 120, watchId: '1' });
     expect(asset.position).toMatchObject({ symbol: 'AI.PA', quantity: 10 });
     expect(asset.points[0]).toEqual({ date: '2026-01-02', close: 100, sma50: null, sma200: null });
     expect(asset.purchases.map((p) => p.symbol)).toEqual(['AI.PA']);

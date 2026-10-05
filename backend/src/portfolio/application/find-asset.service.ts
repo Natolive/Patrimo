@@ -25,8 +25,8 @@ export class FindAssetService {
     const instrument = purchases[0] ?? watch;
     if (!instrument) throw new AssetNotTrackedError();
 
-    // Historiques déjà en cache après le calcul du portefeuille (poids de la ligne compris).
-    const position = purchases.length ? (await this.portfolio.execute(user)).positions.find((p) => p.symbol === symbol)! : null;
+    // Historiques déjà en cache après le calcul du portefeuille (poids de la ligne compris) ; ligne soldée = pas de position.
+    const position = purchases.length ? ((await this.portfolio.execute(user)).positions.find((p) => p.symbol === symbol) ?? null) : null;
     const points = await this.market.history(symbol);
     const { previousClose: _, ...quote } = buildQuote(points);
     const closes = points.map((p) => p.close);

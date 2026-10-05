@@ -11,6 +11,8 @@ export interface PortfolioDto {
   value: number
   gain: number
   gainRate: number
+  // Plus-values encaissées par les ventes, positions soldées comprises.
+  realizedGain: number
   dayChange: number
   dayChangeRate: number
   positions: PositionDto[]

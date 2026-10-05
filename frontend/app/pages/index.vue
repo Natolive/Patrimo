@@ -29,7 +29,7 @@ const columns: TableColumn<PositionDto>[] = [
         <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon PEA</h1>
         <p class="text-muted mt-1">Cours différés, mis à jour toutes les 10 minutes.</p>
       </div>
-      <UButton label="Ajouter un achat" icon="i-lucide-plus" to="/purchases" />
+      <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" />
     </div>
 
     <UAlert
@@ -46,7 +46,8 @@ const columns: TableColumn<PositionDto>[] = [
       <UIcon name="i-lucide-wallet" class="text-muted mx-auto size-10" />
       <p class="text-highlighted mt-4 font-semibold">Ton portefeuille est vide</p>
       <p class="text-muted mt-1">Ajoute tes achats Bourse Direct pour suivre leur valeur et leur tendance.</p>
-      <UButton label="Ajouter un achat" icon="i-lucide-plus" to="/purchases" class="mt-6" />
+      <p v-if="data.realizedGain" class="mt-2 font-medium tabular-nums" :class="gainClass(data.realizedGain)">{{ signedMoney(data.realizedGain) }} réalisés par tes ventes</p>
+      <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" class="mt-6" />
     </UCard>
 
     <template v-else-if="data">
@@ -58,7 +59,13 @@ const columns: TableColumn<PositionDto>[] = [
             {{ signedMoney(data.gain) }} ({{ percent(data.gainRate) }}) depuis tes achats
           </p>
         </UCard>
-        <StatTile label="Investi, frais compris" :value="money(data.invested)" />
+        <StatTile
+          label="Investi, frais compris"
+          :value="money(data.invested)"
+          :hint="data.realizedGain ? undefined : 'Coût des titres détenus'"
+          :delta="data.realizedGain ? `${signedMoney(data.realizedGain)} réalisés par tes ventes` : undefined"
+          :delta-value="data.realizedGain"
+        />
         <StatTile
           label="Variation du jour"
           :value="signedMoney(data.dayChange)"
@@ -98,7 +105,7 @@ const columns: TableColumn<PositionDto>[] = [
             </NuxtLink>
           </template>
           <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
-          <template #averageCost-cell="{ row }">{{ money(row.original.averageCost, row.original.currency) }}</template>
+          <template #averageCost-cell="{ row }">{{ unitMoney(row.original.averageCost, row.original.currency) }}</template>
           <template #price-cell="{ row }">
             <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
             <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AssetDto, TrendPeriod } from '@pea/shared'
+import { TRADE_SIDE_LABELS, type AssetDto, type TrendPeriod } from '@pea/shared'
 
 const route = useRoute()
 const symbol = computed(() => String(route.params.symbol))
@@ -10,6 +10,9 @@ useHead({ title: () => `${data.value?.name ?? symbol.value} · PEA` })
 const range = ref<RangeLabel>('1A')
 const points = computed(() => inRange(data.value?.points ?? [], range.value))
 const currency = computed(() => data.value?.currency ?? 'EUR')
+const markers = computed(() =>
+  (data.value?.purchases ?? []).map((p) => ({ date: p.boughtAt, label: `${TRADE_SIDE_LABELS[p.side]} ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` })),
+)
 
 const periods: { key: TrendPeriod, label: string }[] = [
   { key: '1m', label: '1 mois' },
@@ -69,7 +72,7 @@ const reading = computed(() => {
           :delta="percent(data.position.gainRate)"
           :delta-value="data.position.gain"
         />
-        <StatTile label="Prix de revient unitaire" :value="money(data.position.averageCost, currency)" hint="Frais compris" />
+        <StatTile label="Prix de revient unitaire" :value="unitMoney(data.position.averageCost, currency)" hint="Frais compris" />
         <StatTile label="Quantité" :value="quantity(data.position.quantity)" :hint="`${money(data.position.invested, currency)} investis`" />
       </div>
 
@@ -88,7 +91,7 @@ const reading = computed(() => {
             { key: 'sma50', label: 'MM 50 séances', color: 'var(--color-chart-2)', values: points.map((p) => p.sma50) },
             { key: 'sma200', label: 'MM 200 séances', color: 'var(--color-chart-3)', values: points.map((p) => p.sma200) },
           ]"
-          :markers="data.purchases.map((p) => ({ date: p.boughtAt, label: `Achat ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` }))"
+          :markers="markers"
           :reference="data.position ? { value: data.position.averageCost, label: 'PRU' } : undefined"
           :format="(v) => money(v, currency)"
         />
@@ -144,12 +147,13 @@ const reading = computed(() => {
 
       <UCard v-if="data.purchases.length" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
-          <h2 class="text-highlighted font-semibold">Mes achats</h2>
+          <h2 class="text-highlighted font-semibold">Mes opérations</h2>
         </template>
         <UTable
           :data="data.purchases"
           :columns="[
             { accessorKey: 'boughtAt', header: 'Date' },
+            { accessorKey: 'side', header: 'Opération' },
             { accessorKey: 'quantity', header: 'Quantité', meta: { class: { th: 'text-right', td: 'text-right' } } },
             { accessorKey: 'unitPrice', header: 'Prix unitaire', meta: { class: { th: 'text-right', td: 'text-right' } } },
             { accessorKey: 'fees', header: 'Frais', meta: { class: { th: 'text-right', td: 'text-right' } } },
@@ -158,6 +162,7 @@ const reading = computed(() => {
           class="tabular-nums"
         >
           <template #boughtAt-cell="{ row }">{{ longDate(row.original.boughtAt) }}</template>
+          <template #side-cell="{ row }">{{ TRADE_SIDE_LABELS[row.original.side] }}</template>
           <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
           <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, currency) }}</template>
           <template #fees-cell="{ row }">{{ money(row.original.fees, currency) }}</template>

@@ -1,5 +1,8 @@
+import type { TradeSide } from './trade-side.ts'
+
 export interface PurchaseDto {
   id: string
+  side: TradeSide
   symbol: string
   name: string
   currency: string
@@ -7,6 +10,6 @@ export interface PurchaseDto {
   quantity: number
   unitPrice: number
   fees: number
-  // quantité × prix + frais
+  // Achat : quantité × prix + frais (payé) ; vente : quantité × prix − frais (encaissé).
   total: number
 }

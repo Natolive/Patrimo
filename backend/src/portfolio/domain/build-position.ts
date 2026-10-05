@@ -1,14 +1,14 @@
 import type { PositionDto } from '@pea/shared';
 import type { PricePoint } from '../../market/domain/price-point.entity.js';
-import { purchaseTotal } from '../../purchases/domain/purchase-total.js';
 import type { Purchase } from '../../purchases/domain/purchase.entity.js';
 import { buildQuote } from './build-quote.js';
+import { applyTrade, chronological, emptyHolding } from './holding.js';
 
-// Ligne du portefeuille à partir des achats d'une même valeur et de son historique (non vide) ; le poids se calcule sur l'ensemble.
-export function buildPosition(purchases: Purchase[], points: PricePoint[]): Omit<PositionDto, 'weight'> {
-  const { symbol, name, currency } = purchases[0];
-  const quantity = purchases.reduce((sum, p) => sum + p.quantity, 0);
-  const invested = purchases.reduce((sum, p) => sum + purchaseTotal(p), 0);
+// Ligne du portefeuille à partir des opérations d'une même valeur et de son historique (non vide) ;
+// quantité nulle = ligne soldée (gardée pour sa plus-value réalisée) ; le poids se calcule sur l'ensemble.
+export function buildPosition(trades: Purchase[], points: PricePoint[]): Omit<PositionDto, 'weight'> {
+  const { symbol, name, currency } = trades[0];
+  const { quantity, cost, realizedGain } = chronological(trades).reduce(applyTrade, emptyHolding());
   const { previousClose, ...quote } = buildQuote(points);
   const value = quantity * quote.price;
   return {
@@ -16,12 +16,13 @@ export function buildPosition(purchases: Purchase[], points: PricePoint[]): Omit
     name,
     currency,
     quantity,
-    invested,
-    averageCost: invested / quantity,
+    invested: cost,
+    averageCost: quantity ? cost / quantity : 0,
     ...quote,
     value,
-    gain: value - invested,
-    gainRate: value / invested - 1,
+    gain: value - cost,
+    gainRate: cost ? value / cost - 1 : 0,
     dayChange: quantity * (quote.price - previousClose),
+    realizedGain,
   };
 }

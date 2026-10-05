@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MarketModule } from '../market/market.module.js';
+import { WatchlistModule } from '../watchlist/watchlist.module.js';
 import { CreatePurchaseService } from './application/create-purchase.service.js';
 import { DeletePurchaseService } from './application/delete-purchase.service.js';
 import { FindPurchasesService } from './application/find-purchases.service.js';
@@ -8,7 +9,7 @@ import { DrizzlePurchaseRepository } from './infrastructure/drizzle-purchase.rep
 import { PurchasesController } from './infrastructure/http/purchases.controller.js';
 
 @Module({
-  imports: [MarketModule],
+  imports: [MarketModule, WatchlistModule],
   controllers: [PurchasesController],
   providers: [
     CreatePurchaseService,
