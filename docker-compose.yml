@@ -1,0 +1,50 @@
+# Une seule image pour l'espace de travail npm (shared + backend + frontend).
+x-app: &app
+  build: { context: ., target: dev }
+  volumes:
+    - .:/repo
+    - /repo/node_modules
+    - /repo/backend/node_modules
+    - /repo/frontend/node_modules
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=pea
+      - POSTGRES_PASSWORD=pea
+      - POSTGRES_DB=pea
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pea -d pea"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  backend:
+    <<: *app
+    working_dir: /repo/backend
+    command: sh -c "npm run db:migrate && npm run start:dev"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - CORS_ORIGIN=http://localhost:3010
+      - DATABASE_URL=postgres://pea:pea@db:5432/pea
+    ports:
+      - "3011:3000"
+
+  frontend:
+    <<: *app
+    working_dir: /repo/frontend
+    command: npm run dev -- --host 0.0.0.0
+    environment:
+      - NUXT_PUBLIC_API_URL=http://localhost:3011
+    ports:
+      - "3010:3000"
+
+volumes:
+  db-data:
