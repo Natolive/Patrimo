@@ -1,0 +1,73 @@
+# Production (serveur) : lancé par /srv/patrimo/deploy.sh après chaque push sur main.
+# Caddy (stack à part, /srv/caddy) sert https://patrimo.natolive.fr et joint le front via le réseau externe `proxy`.
+# Seul le service `patrimo` rejoint `proxy` (nom unique : les noms de service y sont partagés entre projets).
+# Secrets dans `.env` à côté de ce fichier (non versionné) : POSTGRES_PASSWORD.
+name: patrimo
+
+# Une seule image, construite par `backend` et reprise telle quelle par `patrimo`.
+x-app: &app
+  image: patrimo-app
+  restart: unless-stopped
+  environment: &env
+    NODE_ENV: production
+
+services:
+  db:
+    image: postgres:18.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: patrimo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      POSTGRES_DB: patrimo
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U patrimo -d patrimo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    <<: *app
+    build: { context: ., target: prod }
+    working_dir: /repo/backend
+    command: sh -c "npm run db:migrate && npm run start:prod"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *env
+      DATABASE_URL: postgres://patrimo:${POSTGRES_PASSWORD}@db:5432/patrimo
+      COOKIE_SECURE: "true"
+      CORS_ORIGIN: https://patrimo.natolive.fr
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+
+  patrimo:
+    <<: *app
+    working_dir: /repo/frontend
+    command: node .output/server/index.mjs
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      <<: *env
+      NUXT_PUBLIC_API_URL: /api
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    networks: [default, proxy]
+
+volumes:
+  db-data:
+
+networks:
+  proxy:
+    external: true

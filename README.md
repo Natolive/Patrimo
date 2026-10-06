@@ -158,3 +158,12 @@ docker compose exec backend npm run db:generate -- --name <nom>   # après un ch
 Versions fixées partout (Node 26.10.0, Postgres 18.6, Traefik 3.7.13, dépendances npm exactes) : une mise à jour est un changement volontaire, suivi de `docker compose up -d --build -V` et de toutes les vérifications ci-dessus.
 
 Règles de code, de tests et checklist avant commit : [`CLAUDE.md`](CLAUDE.md).
+
+### Production
+
+En ligne sur https://patrimo.natolive.fr, sur un serveur Docker personnel.
+
+- **CI** (`.github/workflows/ci.yml`) : à chaque push et PR, lint, tests avec couverture sur une vraie base Postgres, typecheck du front.
+- **Déploiement** : push sur `main` avec la CI au vert → GitHub se connecte au serveur avec une clé qui ne peut lancer que `/srv/patrimo/deploy.sh` (met `main` à jour puis `docker compose -f compose.prod.yml up -d --build`). Les migrations s'appliquent au démarrage du back. Un commit avec `[skip ci]` ne déclenche rien.
+- **Sur le serveur** : stack `compose.prod.yml` dans `/srv/patrimo/repo`, mot de passe Postgres dans son `.env` (non versionné). HTTPS par Caddy (`/srv/caddy`, stack commune à tous les projets), qui joint le front sur le réseau Docker `proxy` ; l'API passe par le front (`/api`), la base et le back ne sont pas exposés.
+- **Créer un compte** : `docker compose -f compose.prod.yml exec backend npm run user:create -- <email> <mot de passe> <prénom> <nom>` dans `/srv/patrimo/repo`.

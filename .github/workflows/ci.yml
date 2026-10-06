@@ -1,0 +1,53 @@
+# Chaque push et PR : lint, tests avec couverture (vraie base Postgres), typecheck du front.
+# Push sur main et tout vert : déploiement sur le serveur (clé SSH qui ne peut lancer que /srv/patrimo/deploy.sh).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      db:
+        image: postgres:18.6
+        env:
+          POSTGRES_USER: patrimo
+          POSTGRES_PASSWORD: patrimo
+          POSTGRES_DB: patrimo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U patrimo -d patrimo"
+          --health-interval 2s --health-timeout 5s --health-retries 15
+    env:
+      DATABASE_URL: postgres://patrimo:patrimo@localhost:5432/patrimo
+    steps:
+      - uses: actions/checkout@v5
+      # Même version que l'image du Dockerfile.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26.10.0
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate -w backend
+      - run: npm run lint -w backend
+      - run: npm run test:cov -w backend
+      - run: npm run typecheck -w frontend
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    concurrency: deploy
+    steps:
+      - name: Déploie sur le serveur
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy nathan@57.129.174.3
