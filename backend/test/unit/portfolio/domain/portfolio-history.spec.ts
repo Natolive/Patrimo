@@ -45,6 +45,17 @@ describe('portfolioHistory', () => {
     ]);
   });
 
+  it('leaves dividends out of the value, and their amount out of the prices', () => {
+    // Pas de cours le 5 : le prix payé reste, pas les 2 € du dividende.
+    const histories = new Map([['AI.PA', [{ date: '2026-01-02', close: 100 }, { date: '2026-01-06', close: 110 }]], ['MC.PA', [{ date: '2026-01-05', close: 700 }]]]);
+    const trades = [bought({ quantity: 10, unitPrice: 100 }), bought({ side: 'dividend', boughtAt: '2026-01-05', quantity: 10, unitPrice: 2 })];
+    expect(portfolioHistory(trades, histories)).toEqual([
+      { date: '2026-01-02', value: 1000, invested: 1000 },
+      { date: '2026-01-05', value: 1000, invested: 1000 },
+      { date: '2026-01-06', value: 1100, invested: 1000 },
+    ]);
+  });
+
   it('is empty without purchases', () => {
     expect(portfolioHistory([], new Map())).toEqual([]);
   });

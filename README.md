@@ -14,11 +14,11 @@ Nom, code ISIN ou mnémonique : les actions et ETF cotés s'affichent pendant la
 
 ### 1. Saisir ses opérations — page « Opérations »
 
-Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le document que le courtier envoie après chaque ordre exécuté) :
+Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le document que le courtier envoie après chaque ordre exécuté), et pour chaque dividende reçu (en bleu) :
 
 | Champ | Exemple | Remarque |
 |---|---|---|
-| Opération | Achat / Vente | |
+| Opération | Achat / Vente / Dividende | |
 | Valeur | `FR001400U5Q4` ou `DCAM` | Code ISIN de l'avis d'opéré (le plus sûr) ou mnémonique ; le nom retrouvé s'affiche dans la liste pour vérifier |
 | Date | 01/10/2026 | |
 | Quantité | 45 | Fractions acceptées |
@@ -26,6 +26,7 @@ Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le docume
 | Frais | 0 | Courtage ; le total de l'avis d'opéré moins quantité × prix |
 
 - Une vente ne peut porter que sur des titres détenus à sa date.
+- **Dividende** : la quantité devient « Titres détenus », le prix « Par titre » (montant brut par titre) et les frais « Retenues » (impôts et prélèvements retenus, 0 s'il n'y en a pas) ; le total est ce qui a été encaissé. Un dividende ne change ni la quantité ni le PRU.
 - Le même formulaire est l'encart « Passer un ordre » de chaque fiche, avec la valeur déjà choisie et le prix prérempli au dernier cours.
 - La liste se charge au fil du défilement, 20 opérations à la fois, avec des lignes fantômes pendant le chargement (de même pour les valeurs suivies et les opérations d'une fiche). Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste.
 - Le crayon d'une ligne rouvre le formulaire prérempli pour corriger l'opération (une faute de saisie, ou des frais de courtage remboursés plus tard par le courtier : mets-les à 0 sur l'ordre concerné pour que le prix de revient soit juste). La correction est refusée si elle laissait une vente porter sur des titres non détenus.
@@ -35,7 +36,7 @@ Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le docume
 ### 2. Voir où en est son portefeuille — « Tableau de bord » (accueil)
 
 - **Valorisation** au dernier cours, **plus-value latente** depuis les achats, **variation du jour**.
-- **Investi, frais compris** et **plus-values réalisées** par les ventes.
+- **Investi, frais compris**, **plus-values réalisées** par les ventes et **dividendes perçus**.
 - **Évolution du portefeuille** : valorisation face au montant investi, jour après jour depuis la première opération (1 mois à tout l'historique).
 - **Positions** : une ligne par valeur détenue avec quantité, prix de revient unitaire (PRU), cours, plus-value, poids dans le portefeuille et tendance ; « Voir le détail » mène à la page Positions.
 - **Marchés** : bandeau qui défile en boucle (il s'arrête au survol et se fait glisser à la main) avec Euronext Paris (où s'échangent les actions et ETF européens), Wall Street et les places asiatiques qui pèsent dans l'ETF Émergents (Shanghai, Hong Kong, Taïwan, Bombay, Séoul) : ouvertes, en pause de midi ou fermées, avec l'heure du prochain changement, jours fériés compris.
@@ -45,12 +46,12 @@ Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le docume
 
 Toutes les lignes détenues, de façon technique mais lisible :
 
-- **Synthèse** : valorisation, coût des titres détenus, plus-value latente et réalisée.
+- **Synthèse** : valorisation, coût des titres détenus, plus-value latente et réalisée, dividendes perçus.
 - **Poids dans le portefeuille** : où est l'argent, ligne par ligne, de la plus grosse à la plus petite.
 - **Contribution à la plus-value** : d'où vient la plus-value latente, gains en vert à droite, pertes en rouge à gauche.
 - **Acheter / Vendre** sur chaque ligne : ouvre la fiche de la valeur, sens déjà choisi dans l'encart d'ordre.
-- **Détail des positions** : tableau triable (clic sur un en-tête) avec recherche et filtres (en gain, en perte, haussières, baissières) : PRU, cours et variation du jour, valorisation, poids, plus-value latente et réalisée, tendance, performance sur 1 an, écart à la moyenne 200 séances, volatilité, écart au plus haut sur 52 semaines. Chaque notion technique a une bulle d'aide au survol de son en-tête ; les colonnes secondaires se masquent sur petit écran, et sur téléphone le tableau devient une liste (valorisation et plus-value, un appui ouvre la fiche).
-- **Lignes soldées** : valeurs entièrement vendues et leur plus-value réalisée.
+- **Détail des positions** : tableau triable (clic sur un en-tête) avec recherche et filtres (en gain, en perte, haussières, baissières) : PRU, cours et variation du jour, valorisation, poids, plus-value latente et réalisée, dividendes, tendance, performance sur 1 an, écart à la moyenne 200 séances, volatilité, écart au plus haut sur 52 semaines. Chaque notion technique a une bulle d'aide au survol de son en-tête ; les colonnes secondaires se masquent sur petit écran, et sur téléphone le tableau devient une liste (valorisation et plus-value, un appui ouvre la fiche).
+- **Lignes soldées** : valeurs entièrement vendues, leur plus-value réalisée et leurs dividendes.
 - **Comment lire cette page** : les notions expliquées en clair (PRU, latent ou réalisé, poids et contribution, moyennes mobiles, volatilité).
 
 ### 4. Comprendre une valeur et passer un ordre — fiche (clic sur son nom, ou depuis la recherche)
@@ -93,6 +94,7 @@ Les valeurs qu'on surveille, détenues ou non : cours et variation du jour, 1 mo
 
 - **Cours différés** (environ 15 minutes), rafraîchis toutes les 10 minutes : pour suivre, pas pour passer un ordre à la seconde.
 - **Prix de revient** au prix moyen pondéré, la méthode fiscale française (PEA et compte-titres) : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
+- **Dividendes** comptés à part : ni dans le PRU, ni dans la plus-value réalisée, ni dans la courbe d'évolution (ce sont des espèces, qui ne sont pas suivies). Ils ne sont pas retrouvés automatiquement : à saisir depuis l'avis de versement.
 - **Montants additionnés tels quels**, sans conversion de devise : prévu pour un portefeuille en euros (un PEA l'est toujours).
 - **Horaires de marché** : Paris et New York calculés (fuseaux, heure d'été, jours fériés), sans les séances raccourcies des veilles de fêtes. Places asiatiques d'après la séance publiée par Yahoo : un jour férié (ex. Golden Week chinoise) s'affiche « jour férié · dernière séance le … » ; une fois la séance du jour finie, l'ouverture suivante est indiquée « normalement » tant que Yahoo ne l'a pas confirmée.
 - **Sur téléphone et tablette** : les sections passent dans une barre d'onglets en bas de l'écran (Accueil, Positions, Opérations, Suivi), le compte reste en haut à droite ; les tableaux masquent leurs colonnes secondaires.
@@ -128,7 +130,7 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
 - `shared/` — schémas Zod partagés (la même règle valide le formulaire et l'API), types des réponses, calcul des horaires de marché.
 - `backend/` — API Nest + Drizzle (Postgres), hexagonale : `src/<domaine>/{domain,application,infrastructure}/`.
   - `auth`, `users` : connexion (avec 2FA), sessions, profil, mot de passe, comptes.
-  - `purchases` : opérations (achats et ventes ; la table porte le nom d'avant les ventes).
+  - `purchases` : opérations (achats, ventes et dividendes ; la table porte le nom d'avant les ventes).
   - `portfolio` : positions et lignes soldées, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
   - `market` : recherche de valeurs, cours, dernier prix et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).

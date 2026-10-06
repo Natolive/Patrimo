@@ -26,7 +26,7 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 - 2FA : codes TOTP uniquement via `totp.ts` (RFC 6238, testé sur ses vecteurs) et `checkSecondFactor` (code de l'application ou de secours, ce dernier consommé) ; codes de secours toujours hachés (`hashToken`) ; connexion en deux temps via `TwoFactorChallenges` (`POST /auth/login` renvoie `{ user }` ou `{ challenge }`). Action sensible sur le compte (désactiver la 2FA, changer de mot de passe) = mot de passe actuel redemandé.
 - Cours : uniquement via le port `MarketData` (adaptateur Yahoo), jamais d'appel HTTP ailleurs.
 - Actualités : uniquement via le port `NewsFeed` (adaptateur Google Actualités), titres et liens seulement ; mots-clés par défaut dans `suggestNewsQuery`.
-- Opérations = table `purchases` avec `side` (`buy`/`sell`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Quantités et PRU uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`) ; toute opération ajoute la valeur à la liste de suivi.
+- Opérations = table `purchases` avec `side` (`buy`/`sell`/`dividend`) : le nom date d'avant les ventes, ne pas en déduire « achat seulement ». Dividende = titres détenus × montant par titre − retenues (`fees`), compté à part (`dividends`), sans effet sur la quantité, le PRU ni l'historique. Quantités, PRU et dividendes uniquement via `applyTrade`/`chronological` (`portfolio/domain/holding.ts`) ; toute opération ajoute la valeur à la liste de suivi.
 - Calculs du portefeuille (positions, tendance, historique) en fonctions pures dans `portfolio/domain/`.
 
 ## Tests (`backend/test/`)
@@ -44,7 +44,7 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 - Thème clair uniquement (`ui.colorMode: false`), responsive ; libellés Nuxt UI en français (`<UApp :locale="fr">`).
 - Pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; compte via `useAuth()`, appels API via `useApi()`, erreur affichée avec `apiErrorMessage(e)` dans un toast.
 - Formulaire = `FormBuilder` + schéma `@patrimo/shared`, jamais de `validate` à la main.
-- Ordre (achat/vente) = `OrderForm` uniquement (page Opérations, modale de correction avec `purchase`, et encart `OrderCard` de la fiche) ; ailleurs, un bouton Acheter/Vendre est un lien vers la fiche avec `?side=buy|sell`. Achat toujours en vert (`success`), vente en rouge (`error`) : badges, boutons, sélecteur, bouton d'envoi.
+- Ordre (achat/vente) = `OrderForm` uniquement (page Opérations, modale de correction avec `purchase`, et encart `OrderCard` de la fiche) ; ailleurs, un bouton Acheter/Vendre est un lien vers la fiche avec `?side=buy|sell`. Achat toujours en vert (`success`), vente en rouge (`error`), dividende en bleu (`info`), via `SIDE_COLOR`/`SIDE_ICON` (`utils/trade-side.ts`) : badges, boutons, sélecteur, bouton d'envoi.
 - Recherche globale = `SearchGlobal` dans l'en-tête (⌘K, `useSearch().openSearch()` depuis une page) ; valider ouvre la fiche, qui marche pour toute valeur cotée.
 - Après un ajout qui touche d'autres listes (ordre, suivi depuis une fiche) : `useDataVersion().bump()` recharge les données et les listes paginées.
 - Date du jour côté navigateur = date locale (`toLocaleDateString('en-CA')`), jamais `toISOString()` (UTC : encore la veille juste après minuit).

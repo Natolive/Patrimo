@@ -10,6 +10,6 @@ export interface PurchaseDto {
   quantity: number
   unitPrice: number
   fees: number
-  // Achat : quantité × prix + frais (payé) ; vente : quantité × prix − frais (encaissé).
+  // Achat : quantité × prix + frais (payé) ; vente ou dividende : quantité × prix − frais (encaissé).
   total: number
 }

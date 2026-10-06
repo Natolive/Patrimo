@@ -47,6 +47,7 @@ const columns: TableColumn<PositionDto>[] = [
         <p class="text-highlighted mt-4 font-semibold">Ton portefeuille est vide</p>
         <p class="text-muted mt-1">Ajoute tes achats pour suivre leur valeur et leur tendance.</p>
         <p v-if="data.realizedGain" class="mt-2 font-medium tabular-nums" :class="gainClass(data.realizedGain)">{{ signedMoney(data.realizedGain) }} réalisés par tes ventes</p>
+        <p v-if="data.dividends" class="mt-1 font-medium tabular-nums" :class="gainClass(data.dividends)">{{ signedMoney(data.dividends) }} de dividendes perçus</p>
         <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" class="mt-6" />
       </UCard>
 
@@ -62,7 +63,7 @@ const columns: TableColumn<PositionDto>[] = [
           <StatTile
             label="Investi, frais compris"
             :value="money(data.invested)"
-            :hint="data.realizedGain ? undefined : 'Coût des titres détenus'"
+            :hint="data.dividends ? `${money(data.dividends)} de dividendes perçus` : data.realizedGain ? undefined : 'Coût des titres détenus'"
             :delta="data.realizedGain ? `${signedMoney(data.realizedGain)} réalisés par tes ventes` : undefined"
             :delta-value="data.realizedGain"
           />

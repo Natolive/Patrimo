@@ -101,6 +101,13 @@ describe('Portfolio (e2e)', () => {
     expect(afterSale.positions[0].quantity).toBe(6);
     expect(afterSale.realizedGain).toBeCloseTo(479 - 0.4 * 1007.04);
     await http.delete(`/purchases/${bought.id}`).expect(400);
+    // Dividende : 6 titres × 1,50 €, à part de la plus-value réalisée.
+    const { body: dividend } = await http
+      .post('/purchases')
+      .send({ side: 'dividend', asset: 'AI.PA', boughtAt: '2026-01-07', quantity: '6', unitPrice: '1,5', fees: '0' })
+      .expect(201);
+    expect((await http.get('/portfolio').expect(200)).body).toMatchObject({ dividends: 9, positions: [{ quantity: 6, dividends: 9 }] });
+    await http.delete(`/purchases/${dividend.id}`).expect(204);
     // Correction : frais remboursés, puis une quantité qui laisserait la vente à découvert.
     const corrected = { asset: 'AI.PA', boughtAt: '2026-01-02', quantity: '10', unitPrice: '100,505', fees: '0' };
     expect((await http.put(`/purchases/${bought.id}`).send(corrected).expect(200)).body).toMatchObject({ id: bought.id, fees: 0, total: 1005.05 });

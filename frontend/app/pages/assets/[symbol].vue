@@ -185,7 +185,7 @@ const reading = computed(() => {
           >
             <template #boughtAt-cell="{ row }">{{ longDate(row.original.boughtAt) }}</template>
             <template #side-cell="{ row }">
-            <UBadge :label="TRADE_SIDE_LABELS[row.original.side]" :color="row.original.side === 'buy' ? 'success' : 'error'" variant="subtle" />
+            <UBadge :label="TRADE_SIDE_LABELS[row.original.side]" :color="SIDE_COLOR[row.original.side]" variant="subtle" />
           </template>
             <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
             <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, currency) }}</template>

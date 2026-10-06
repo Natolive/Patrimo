@@ -8,7 +8,7 @@ import { applyTrade, chronological, emptyHolding } from './holding.js';
 // quantité nulle = ligne soldée (gardée pour sa plus-value réalisée) ; le poids se calcule sur l'ensemble.
 export function buildPosition(trades: Purchase[], points: PricePoint[]): Omit<PositionDto, 'weight'> {
   const { symbol, name, currency } = trades[0];
-  const { quantity, cost, realizedGain } = chronological(trades).reduce(applyTrade, emptyHolding());
+  const { quantity, cost, realizedGain, dividends } = chronological(trades).reduce(applyTrade, emptyHolding());
   const { previousClose, ...quote } = buildQuote(points);
   const value = quantity * quote.price;
   return {
@@ -24,5 +24,6 @@ export function buildPosition(trades: Purchase[], points: PricePoint[]): Omit<Po
     gainRate: cost ? value / cost - 1 : 0,
     dayChange: quantity * (quote.price - previousClose),
     realizedGain,
+    dividends,
   };
 }

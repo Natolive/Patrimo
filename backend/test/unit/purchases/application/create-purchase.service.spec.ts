@@ -30,6 +30,12 @@ describe('CreatePurchaseService', () => {
     await app.create.execute(lea, { ...sale, boughtAt: '2026-01-02', quantity: 6 });
   });
 
+  it('records a dividend, its total net of withholdings', async () => {
+    const app = setupPurchases();
+    await app.create.execute(lea, purchase);
+    expect(await app.create.execute(lea, { ...purchase, side: 'dividend', boughtAt: '2026-01-05', unitPrice: 3.3, fees: 1 })).toMatchObject({ side: 'dividend', total: 32 });
+  });
+
   it('refuses to sell more shares than held at that date, whoever holds others', async () => {
     const app = setupPurchases();
     await app.create.execute(max, purchase);

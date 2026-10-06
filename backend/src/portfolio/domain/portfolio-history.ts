@@ -3,7 +3,7 @@ import type { PricePoint } from '../../market/domain/price-point.entity.js';
 import type { Purchase } from '../../purchases/domain/purchase.entity.js';
 import { applyTrade, chronological, emptyHolding, type Holding } from './holding.js';
 
-// Valorisation et coût des titres détenus à chaque séance depuis la première opération.
+// Valorisation et coût des titres détenus à chaque séance depuis la première opération (dividendes à part : ce sont des espèces).
 // Valeur sans cours ce jour-là : dernière clôture connue, sinon le prix de la dernière opération.
 export function portfolioHistory(trades: Purchase[], histories: Map<string, PricePoint[]>): PortfolioPointDto[] {
   const ordered = chronological(trades);
@@ -20,7 +20,8 @@ export function portfolioHistory(trades: Purchase[], histories: Map<string, Pric
     for (; next < ordered.length && ordered[next].boughtAt <= date; next++) {
       const trade = ordered[next];
       holdings.set(trade.symbol, applyTrade(holdings.get(trade.symbol) ?? emptyHolding(), trade));
-      lastPrice.set(trade.symbol, trade.unitPrice);
+      // Le montant d'un dividende n'est pas un cours.
+      if (trade.side !== 'dividend') lastPrice.set(trade.symbol, trade.unitPrice);
     }
     for (const [symbol, close] of byDate.get(date)!) lastPrice.set(symbol, close);
     let value = 0;

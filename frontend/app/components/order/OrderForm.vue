@@ -2,7 +2,7 @@
 import { purchaseSchema, TRADE_SIDE_LABELS, type PurchaseDto, type PurchaseInput, type SavePurchaseDto, type TradeSide } from '@patrimo/shared'
 import type { FormFieldConfig } from '~/types/form'
 
-// Formulaire d'opération (achat ou vente) : page Opérations, et fenêtre d'ordre avec la valeur déjà choisie (`asset`) ;
+// Formulaire d'opération (achat, vente ou dividende) : page Opérations, et fenêtre d'ordre avec la valeur déjà choisie (`asset`) ;
 // `purchase` : correction d'une opération existante (prérempli avec elle).
 const props = defineProps<{ asset?: string, side?: TradeSide, price?: number, purchase?: PurchaseDto }>()
 const emit = defineEmits<{ saved: [purchase: PurchaseDto] }>()
@@ -19,17 +19,29 @@ const initial = (): PurchaseInput => {
   return { side: props.side ?? 'buy', asset: props.asset ?? '', boughtAt: today(), quantity: '', unitPrice: decimal(props.price), fees: '0' }
 }
 const state = ref<PurchaseInput>(initial())
-// Côté choisi : jamais vide (le schéma met « buy » par défaut).
-const side = computed({ get: () => state.value.side ?? 'buy', set: (v: TradeSide) => (state.value.side = v) })
+// Côté choisi : jamais vide (le schéma met « buy » par défaut) ; le dernier cours prérempli n'est pas un montant de dividende.
+const side = computed({
+  get: () => state.value.side ?? 'buy',
+  set: (v: TradeSide) => {
+    if (!props.purchase && (v === 'dividend') !== (side.value === 'dividend')) state.value.unitPrice = v === 'dividend' ? '' : decimal(props.price)
+    state.value.side = v
+  },
+})
+const dividend = computed(() => side.value === 'dividend')
+const SUBMIT_LABELS: Record<TradeSide, string> = { buy: 'Enregistrer l’achat', sell: 'Enregistrer la vente', dividend: 'Enregistrer le dividende' }
 
 const fields = computed<FormFieldConfig<PurchaseInput>[]>(() => [
   ...(props.asset
     ? []
     : [{ name: 'asset' as const, label: 'Valeur', placeholder: 'FR0000120073 ou CW8', icon: 'i-lucide-search', help: 'Code ISIN (sur l’avis d’opéré de ton courtier) ou mnémonique.' }]),
   { name: 'boughtAt', label: 'Date', type: 'date', half: true },
-  { name: 'quantity', label: 'Quantité', inputmode: 'decimal', placeholder: '10', half: true },
-  { name: 'unitPrice', label: 'Prix unitaire (€)', inputmode: 'decimal', placeholder: '171,585', half: true, help: props.price ? 'Prérempli au dernier cours.' : undefined },
-  { name: 'fees', label: 'Frais (€)', inputmode: 'decimal', placeholder: '1,99', help: 'Courtage, TTF…', half: true },
+  { name: 'quantity', label: dividend.value ? 'Titres détenus' : 'Quantité', inputmode: 'decimal', placeholder: '10', half: true },
+  dividend.value
+    ? { name: 'unitPrice', label: 'Par titre (€)', inputmode: 'decimal', placeholder: '3,30', half: true, help: 'Dividende brut par titre.' }
+    : { name: 'unitPrice', label: 'Prix unitaire (€)', inputmode: 'decimal', placeholder: '171,585', half: true, help: props.price ? 'Prérempli au dernier cours.' : undefined },
+  dividend.value
+    ? { name: 'fees', label: 'Retenues (€)', inputmode: 'decimal', placeholder: '0', help: 'Impôts et prélèvements retenus, 0 s’il n’y en a pas.', half: true }
+    : { name: 'fees', label: 'Frais (€)', inputmode: 'decimal', placeholder: '1,99', help: 'Courtage, TTF…', half: true },
 ])
 
 async function save(dto: SavePurchaseDto) {
@@ -45,8 +57,8 @@ async function save(dto: SavePurchaseDto) {
   toast.add({
     title: `${TRADE_SIDE_LABELS[purchase.side]} ${props.purchase ? 'modifié' : 'enregistré'}${purchase.side === 'sell' ? 'e' : ''}`,
     description: `${quantity(purchase.quantity)} × ${purchase.name}`,
-    color: purchase.side === 'buy' ? 'success' : 'error',
-    icon: purchase.side === 'buy' ? 'i-lucide-arrow-down-to-line' : 'i-lucide-arrow-up-from-line',
+    color: SIDE_COLOR[purchase.side],
+    icon: SIDE_ICON[purchase.side],
   })
   state.value = { ...initial(), side: purchase.side }
   emit('saved', purchase)
@@ -61,8 +73,8 @@ async function save(dto: SavePurchaseDto) {
       :schema="purchaseSchema"
       :fields="fields"
       :submit="save"
-      :submit-label="purchase ? 'Enregistrer les modifications' : side === 'buy' ? 'Enregistrer l’achat' : 'Enregistrer la vente'"
-      :submit-color="side === 'buy' ? 'success' : 'error'"
+      :submit-label="purchase ? 'Enregistrer les modifications' : SUBMIT_LABELS[side]"
+      :submit-color="SIDE_COLOR[side]"
     />
   </div>
 </template>

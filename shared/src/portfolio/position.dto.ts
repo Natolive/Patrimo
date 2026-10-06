@@ -17,6 +17,8 @@ export interface PositionDto extends QuoteDto {
   dayChange: number
   // Plus-values encaissées par les ventes, frais déduits.
   realizedGain: number
+  // Dividendes encaissés, retenues déduites.
+  dividends: number
   // Part de la valorisation totale (0 à 1).
   weight: number
 }
