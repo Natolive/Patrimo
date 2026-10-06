@@ -1,5 +1,6 @@
 # Chaque push et PR : lint, tests avec couverture (vraie base Postgres), typecheck du front.
-# Push sur main et tout vert : déploiement sur le serveur (clé SSH qui ne peut lancer que /srv/patrimo/deploy.sh).
+# Push sur main : image de prod construite en parallèle et publiée sur GHCR (ghcr.io/natolive/patrimo:<sha>),
+# puis, si tout est vert, déploiement : clé SSH qui ne peut lancer que /srv/patrimo/deploy.sh <sha>.
 name: CI
 
 on:
@@ -36,9 +37,33 @@ jobs:
       - run: npm run test:cov -w backend
       - run: npm run typecheck -w frontend
 
-  deploy:
-    needs: test
+  image:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: prod
+          push: true
+          tags: ghcr.io/natolive/patrimo:${{ github.sha }}
+          # Lie l'image au dépôt (même visibilité, visible dans « Packages »).
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [test, image]
     runs-on: ubuntu-24.04
     concurrency: deploy
     steps:
@@ -50,4 +75,4 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy nathan@57.129.174.3
+          ssh -i ~/.ssh/deploy nathan@57.129.174.3 ${{ github.sha }}
