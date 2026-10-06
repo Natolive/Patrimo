@@ -155,7 +155,7 @@ docker compose exec frontend npm run typecheck
 docker compose exec backend npm run db:generate -- --name <nom>   # après un changement de table (migrations appliquées au démarrage)
 ```
 
-Versions fixées partout (Node 26.10.0, Postgres 18.6, Traefik 3.7.13, dépendances npm exactes) : une mise à jour est un changement volontaire, suivi de `docker compose up -d --build -V` et de toutes les vérifications ci-dessus.
+Versions fixées partout (Node 26.10.0, Postgres 18.6, Traefik 3.7.13, dépendances npm exactes, actions GitHub figées sur leur commit) : une mise à jour est un changement volontaire, suivi de `docker compose up -d --build -V` et de toutes les vérifications ci-dessus. Dependabot propose les mises à jour chaque semaine, en une PR par écosystème (npm, images Docker, actions).
 
 Règles de code, de tests et checklist avant commit : [`CLAUDE.md`](CLAUDE.md).
 
@@ -163,8 +163,8 @@ Règles de code, de tests et checklist avant commit : [`CLAUDE.md`](CLAUDE.md).
 
 En ligne sur https://patrimo.natolive.fr, sur un serveur Docker personnel.
 
-- **CI** (`.github/workflows/ci.yml`) : à chaque push et PR, lint, tests avec couverture sur une vraie base Postgres, typecheck du front.
-- **Image** : à chaque push sur `main`, la CI construit l'image de prod et la publie sur GHCR (`ghcr.io/natolive/patrimo:<sha du commit>`, onglet « Packages » du dépôt), les 10 dernières gardées. Après chaque déploiement, le serveur supprime ses anciennes images.
-- **Déploiement** : push sur `main` avec tests et image au vert → GitHub se connecte au serveur avec une clé qui ne peut lancer que `/srv/patrimo/deploy.sh <sha>` (met le dépôt sur ce commit, tire l'image puis `docker compose -f compose.prod.yml up -d`). Les migrations s'appliquent au démarrage du back. Un commit avec `[skip ci]` ne déclenche rien. Revenir à une version : relancer le job « deploy » de son exécution dans l'onglet Actions, ou `/srv/patrimo/deploy.sh <sha>` sur le serveur.
+- **CI** (`.github/workflows/ci.yml`) : à chaque push et PR, lint, tests avec couverture sur une vraie base Postgres, typecheck du front et construction de l'image de prod. Une modification qui ne touche que la doc (`*.md`) ne la lance pas ; un nouveau push sur une PR annule l'exécution en cours.
+- **Image** : sur `main`, publiée sur GHCR (`ghcr.io/natolive/patrimo:<sha du commit>`, onglet « Packages » du dépôt), les 10 dernières gardées. Elle ne contient que le front et le back compilés et les dépendances d'exécution du back ; les migrations y passent par `drizzle-orm` (`node dist/migrate.js`), `drizzle-kit` restant l'outil de dev. Après chaque déploiement, le serveur supprime ses anciennes images.
+- **Déploiement** : push sur `main` avec tests et image au vert → GitHub se connecte au serveur avec une clé qui ne peut lancer que `/srv/patrimo/deploy.sh <sha>` (met le dépôt sur ce commit, tire l'image puis `docker compose -f compose.prod.yml up -d`). Les migrations s'appliquent au démarrage du back, puis la CI vérifie `https://patrimo.natolive.fr/api/health` depuis l'extérieur. Un commit avec `[skip ci]` ne déclenche rien. Revenir à une version : relancer le job « deploy » de son exécution dans l'onglet Actions, ou `/srv/patrimo/deploy.sh <sha>` sur le serveur.
 - **Sur le serveur** : stack `compose.prod.yml` dans `/srv/patrimo/repo`, mot de passe Postgres et tag d'image déployé dans son `.env` (non versionné). HTTPS par Caddy (`/srv/caddy`, stack commune à tous les projets), qui joint le front sur le réseau Docker `proxy` ; l'API passe par le front (`/api`), la base et le back ne sont pas exposés.
 - **Créer un compte** : `docker compose -f compose.prod.yml exec backend npm run user:create -- <email> <mot de passe> <prénom> <nom>` dans `/srv/patrimo/repo`.

@@ -16,11 +16,11 @@ export default defineConfig({
     ],
     // `npm run test:cov` : les deux projets, sur tout `src/` (badge du README), 100 % exigé sauf les branches
     // que le compilateur ajoute aux décorateurs Nest (métadonnées d'injection, jamais prises à l'exécution).
-    // Hors couverture : le démarrage du serveur, le script de création de compte (ses briques sont testées) et les tables (déclarations lues par Drizzle ; leurs clés étrangères
+    // Hors couverture : le démarrage du serveur, les scripts de création de compte (ses briques sont testées) et de migration (simple appel à Drizzle), les tables (déclarations lues par Drizzle ; leurs clés étrangères
     // sont vérifiées par les migrations et par les suppressions en cascade des e2e).
     coverage: {
       include: ['src/**/*.ts'],
-      exclude: ['src/main.ts', 'src/create-user.ts', 'src/**/*.table.ts'],
+      exclude: ['src/main.ts', 'src/create-user.ts', 'src/migrate.ts', 'src/**/*.table.ts'],
       reporter: ['text', 'json-summary'],
       thresholds: { statements: 100, functions: 100, lines: 100 },
     },

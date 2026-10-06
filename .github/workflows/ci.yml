@@ -1,12 +1,23 @@
-# Chaque push et PR : lint, tests avec couverture (vraie base Postgres), typecheck du front.
-# Push sur main : image de prod construite en parallèle et publiée sur GHCR (ghcr.io/natolive/patrimo:<sha>),
-# puis, si tout est vert, déploiement : clé SSH qui ne peut lancer que /srv/patrimo/deploy.sh <sha>.
+# Chaque push et PR : lint, tests avec couverture (vraie base Postgres), typecheck du front, et image de prod construite.
+# Push sur main : image publiée sur GHCR (ghcr.io/natolive/patrimo:<sha>) puis, si tout est vert, déploiement
+# (clé SSH qui ne peut lancer que /srv/patrimo/deploy.sh <sha>) et vérification du site depuis l'extérieur.
+# Actions figées sur leur commit (dépôt public : une étiquette peut être déplacée), mises à jour par Dependabot.
 name: CI
 
 on:
   push:
     branches: [main]
+    paths-ignore: ['**.md', '.claude/**']
   pull_request:
+    paths-ignore: ['**.md', '.claude/**']
+
+# Un nouveau push sur une PR annule l'exécution en cours ; sur main, chaque commit va jusqu'au bout.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -25,9 +36,9 @@ jobs:
     env:
       DATABASE_URL: postgres://patrimo:patrimo@localhost:5432/patrimo
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Même version que l'image du Dockerfile.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 26.10.0
           cache: npm
@@ -37,25 +48,28 @@ jobs:
       - run: npm run test:cov -w backend
       - run: npm run typecheck -w frontend
 
+  # Sur une PR : construite sans être publiée (une erreur de build se voit avant la fusion).
   image:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
+    env:
+      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - if: env.PUBLISH == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           target: prod
-          push: true
+          push: ${{ env.PUBLISH == 'true' }}
           tags: ghcr.io/natolive/patrimo:${{ github.sha }}
           # Lie l'image au dépôt (même visibilité, visible dans « Packages »).
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -64,7 +78,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       # Garde les 10 dernières images (versions où l'on peut revenir), supprime les plus anciennes.
-      - uses: actions/delete-package-versions@v5
+      - if: env.PUBLISH == 'true'
+        uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
         with:
           package-name: patrimo
           package-type: container
@@ -72,8 +87,12 @@ jobs:
 
   deploy:
     needs: [test, image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     concurrency: deploy
+    environment:
+      name: production
+      url: https://patrimo.natolive.fr
     steps:
       - name: Déploie sur le serveur
         env:
@@ -84,3 +103,6 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           ssh -i ~/.ssh/deploy nathan@57.129.174.3 ${{ github.sha }}
+      # Depuis l'extérieur : DNS, certificat, Caddy, front et API jusqu'à la base.
+      - name: Vérifie le site
+        run: curl -fsS --retry 5 --retry-delay 3 --retry-all-errors https://patrimo.natolive.fr/api/health

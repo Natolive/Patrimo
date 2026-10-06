@@ -30,7 +30,8 @@ services:
   backend:
     <<: *app
     working_dir: /repo/backend
-    command: sh -c "npm run db:migrate && npm run start:prod"
+    # Migrations par drizzle-orm (drizzle-kit, outil de dev, n'est pas dans l'image).
+    command: sh -c "node dist/migrate.js && exec node dist/main.js"
     depends_on:
       db:
         condition: service_healthy

@@ -21,6 +21,7 @@
     "test:e2e": "vitest run --project e2e",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:prod": "node dist/migrate",
     "db:studio": "drizzle-kit studio --host 0.0.0.0",
     "user:create": "node dist/create-user"
   },
