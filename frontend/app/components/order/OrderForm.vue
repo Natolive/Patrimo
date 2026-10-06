@@ -2,8 +2,9 @@
 import { purchaseSchema, TRADE_SIDE_LABELS, type PurchaseDto, type PurchaseInput, type SavePurchaseDto, type TradeSide } from '@patrimo/shared'
 import type { FormFieldConfig } from '~/types/form'
 
-// Formulaire d'opération (achat ou vente) : page Opérations, et fenêtre d'ordre avec la valeur déjà choisie (`asset`).
-const props = defineProps<{ asset?: string, side?: TradeSide, price?: number }>()
+// Formulaire d'opération (achat ou vente) : page Opérations, et fenêtre d'ordre avec la valeur déjà choisie (`asset`) ;
+// `purchase` : correction d'une opération existante (prérempli avec elle).
+const props = defineProps<{ asset?: string, side?: TradeSide, price?: number, purchase?: PurchaseDto }>()
 const emit = defineEmits<{ saved: [purchase: PurchaseDto] }>()
 
 const api = useApi()
@@ -12,7 +13,11 @@ const toast = useToast()
 // Date locale du navigateur (et non UTC : juste après minuit, ce serait encore la veille).
 const today = () => new Date().toLocaleDateString('en-CA')
 const decimal = (n?: number) => (n === undefined ? '' : String(Math.round(n * 1000) / 1000).replace('.', ','))
-const initial = (): PurchaseInput => ({ side: props.side ?? 'buy', asset: props.asset ?? '', boughtAt: today(), quantity: '', unitPrice: decimal(props.price), fees: '0' })
+const initial = (): PurchaseInput => {
+  const p = props.purchase
+  if (p) return { side: p.side, asset: p.symbol, boughtAt: p.boughtAt, quantity: decimal(p.quantity), unitPrice: decimal(p.unitPrice), fees: decimal(p.fees) }
+  return { side: props.side ?? 'buy', asset: props.asset ?? '', boughtAt: today(), quantity: '', unitPrice: decimal(props.price), fees: '0' }
+}
 const state = ref<PurchaseInput>(initial())
 // Côté choisi : jamais vide (le schéma met « buy » par défaut).
 const side = computed({ get: () => state.value.side ?? 'buy', set: (v: TradeSide) => (state.value.side = v) })
@@ -30,13 +35,15 @@ const fields = computed<FormFieldConfig<PurchaseInput>[]>(() => [
 async function save(dto: SavePurchaseDto) {
   let purchase: PurchaseDto
   try {
-    purchase = await api<PurchaseDto>('/purchases', { method: 'POST', body: dto })
+    purchase = props.purchase
+      ? await api<PurchaseDto>(`/purchases/${props.purchase.id}`, { method: 'PUT', body: dto })
+      : await api<PurchaseDto>('/purchases', { method: 'POST', body: dto })
   } catch (e) {
     toast.add({ title: `${TRADE_SIDE_LABELS[dto.side]} impossible`, description: apiErrorMessage(e), color: 'error', icon: 'i-lucide-circle-alert' })
     return
   }
   toast.add({
-    title: `${TRADE_SIDE_LABELS[purchase.side]} enregistré${purchase.side === 'sell' ? 'e' : ''}`,
+    title: `${TRADE_SIDE_LABELS[purchase.side]} ${props.purchase ? 'modifié' : 'enregistré'}${purchase.side === 'sell' ? 'e' : ''}`,
     description: `${quantity(purchase.quantity)} × ${purchase.name}`,
     color: purchase.side === 'buy' ? 'success' : 'error',
     icon: purchase.side === 'buy' ? 'i-lucide-arrow-down-to-line' : 'i-lucide-arrow-up-from-line',
@@ -54,7 +61,7 @@ async function save(dto: SavePurchaseDto) {
       :schema="purchaseSchema"
       :fields="fields"
       :submit="save"
-      :submit-label="side === 'buy' ? 'Enregistrer l’achat' : 'Enregistrer la vente'"
+      :submit-label="purchase ? 'Enregistrer les modifications' : side === 'buy' ? 'Enregistrer l’achat' : 'Enregistrer la vente'"
       :submit-color="side === 'buy' ? 'success' : 'error'"
     />
   </div>

@@ -2,6 +2,7 @@ import type { SavePurchaseDto, UserDto } from '@patrimo/shared';
 import { CreatePurchaseService } from '@src/purchases/application/create-purchase.service.js';
 import { DeletePurchaseService } from '@src/purchases/application/delete-purchase.service.js';
 import { FindPurchasesService } from '@src/purchases/application/find-purchases.service.js';
+import { UpdatePurchaseService } from '@src/purchases/application/update-purchase.service.js';
 import { FakeMarketData } from '@test/fakes/fake-market-data.js';
 import { InMemoryPurchaseRepository } from '@test/fakes/in-memory-purchase.repository.js';
 import { InMemoryWatchRepository } from '@test/fakes/in-memory-watch.repository.js';
@@ -20,6 +21,7 @@ export function setupPurchases() {
     market,
     create: new CreatePurchaseService(purchases, watches, market),
     find: new FindPurchasesService(purchases),
+    update: new UpdatePurchaseService(purchases, watches, market),
     delete: new DeletePurchaseService(purchases),
   };
 }

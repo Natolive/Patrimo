@@ -28,7 +28,8 @@ Pour chaque achat (en vert) ou vente (en rouge) de son avis d'opéré (le docume
 - Une vente ne peut porter que sur des titres détenus à sa date.
 - Le même formulaire est l'encart « Passer un ordre » de chaque fiche, avec la valeur déjà choisie et le prix prérempli au dernier cours.
 - La liste se charge au fil du défilement, 20 opérations à la fois, avec des lignes fantômes pendant le chargement (de même pour les valeurs suivies et les opérations d'une fiche). Sur grand écran, le formulaire reste visible pendant qu'on fait défiler la liste.
-- Pas de modification : supprimer l'opération puis la ressaisir. Un achat dont dépend une vente ne se supprime qu'après elle.
+- Le crayon d'une ligne rouvre le formulaire prérempli pour corriger l'opération (une faute de saisie, ou des frais de courtage remboursés plus tard par le courtier : mets-les à 0 sur l'ordre concerné pour que le prix de revient soit juste). La correction est refusée si elle laissait une vente porter sur des titres non détenus.
+- La corbeille supprime l'opération ; un achat dont dépend une vente ne se supprime qu'après elle.
 - Les virements et les espèces du compte ne sont pas suivis.
 
 ### 2. Voir où en est son portefeuille — « Tableau de bord » (accueil)
