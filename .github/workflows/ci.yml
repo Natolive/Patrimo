@@ -59,8 +59,16 @@ jobs:
           tags: ghcr.io/natolive/patrimo:${{ github.sha }}
           # Lie l'image au dépôt (même visibilité, visible dans « Packages »).
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          # Sans attestation : une seule version par commit dans GHCR, ce qui garde le nettoyage simple.
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      # Garde les 10 dernières images (versions où l'on peut revenir), supprime les plus anciennes.
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: patrimo
+          package-type: container
+          min-versions-to-keep: 10
 
   deploy:
     needs: [test, image]
