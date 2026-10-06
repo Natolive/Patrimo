@@ -16,6 +16,13 @@ async function onSaved(purchase: PurchaseDto) {
   await reset()
 }
 
+// Correction dans une modale, avec le formulaire prérempli.
+const editing = ref<PurchaseDto>()
+async function onEdited(purchase: PurchaseDto) {
+  editing.value = undefined
+  await onSaved(purchase)
+}
+
 // Suppression confirmée dans une modale qui dit ce qui part.
 const removing = ref<PurchaseDto>()
 async function remove() {
@@ -86,7 +93,10 @@ const columns: TableColumn<PurchaseDto>[] = [
         <template #fees-cell="{ row }">{{ money(row.original.fees, row.original.currency) }}</template>
         <template #total-cell="{ row }"><span class="text-highlighted font-medium">{{ money(row.original.total, row.original.currency) }}</span></template>
         <template #actions-cell="{ row }">
-          <UButton icon="i-lucide-trash-2" color="neutral" variant="ghost" :aria-label="`Supprimer l’opération sur ${row.original.name}`" @click="removing = row.original" />
+          <div class="flex justify-end">
+            <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" :aria-label="`Modifier l’opération sur ${row.original.name}`" @click="editing = row.original" />
+            <UButton icon="i-lucide-trash-2" color="neutral" variant="ghost" :aria-label="`Supprimer l’opération sur ${row.original.name}`" @click="removing = row.original" />
+          </div>
         </template>
       </UTable>
       <ListSkeleton v-if="loading" :rows="purchases.length ? 3 : 8" />
@@ -102,6 +112,12 @@ const columns: TableColumn<PurchaseDto>[] = [
       />
       <ListSentinel :active="!loading && !done && !error" @visible="loadMore" />
     </UCard>
+
+    <UModal :open="!!editing" title="Modifier l’opération" @update:open="(open) => !open && (editing = undefined)">
+      <template #body>
+        <OrderForm v-if="editing" :purchase="editing" @saved="onEdited" />
+      </template>
+    </UModal>
 
     <UModal :open="!!removing" title="Supprimer l’opération ?" @update:open="(open) => !open && (removing = undefined)">
       <template #body>

@@ -101,6 +101,12 @@ describe('Portfolio (e2e)', () => {
     expect(afterSale.positions[0].quantity).toBe(6);
     expect(afterSale.realizedGain).toBeCloseTo(479 - 0.4 * 1007.04);
     await http.delete(`/purchases/${bought.id}`).expect(400);
+    // Correction : frais remboursés, puis une quantité qui laisserait la vente à découvert.
+    const corrected = { asset: 'AI.PA', boughtAt: '2026-01-02', quantity: '10', unitPrice: '100,505', fees: '0' };
+    expect((await http.put(`/purchases/${bought.id}`).send(corrected).expect(200)).body).toMatchObject({ id: bought.id, fees: 0, total: 1005.05 });
+    await http.put(`/purchases/${bought.id}`).send({ ...corrected, quantity: '3' }).expect(400);
+    await http.put(`/purchases/${bought.id}`).send({ ...corrected, quantity: 'abc' }).expect(400);
+    await http.put(`/purchases/${randomUUID()}`).send(corrected).expect(404);
     await http.delete(`/purchases/${sold.id}`).expect(204);
 
     await http.delete('/purchases/nope').expect(400);

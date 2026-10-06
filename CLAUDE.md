@@ -44,7 +44,7 @@ Patrimo : appli de suivi d'un portefeuille d'actions et d'ETF (PEA, compte-titre
 - Thème clair uniquement (`ui.colorMode: false`), responsive ; libellés Nuxt UI en français (`<UApp :locale="fr">`).
 - Pages privées par défaut (`auth.global.ts`), `definePageMeta({ guest: true })` pour les visiteurs ; compte via `useAuth()`, appels API via `useApi()`, erreur affichée avec `apiErrorMessage(e)` dans un toast.
 - Formulaire = `FormBuilder` + schéma `@patrimo/shared`, jamais de `validate` à la main.
-- Ordre (achat/vente) = `OrderForm` uniquement (page Opérations et encart `OrderCard` de la fiche) ; ailleurs, un bouton Acheter/Vendre est un lien vers la fiche avec `?side=buy|sell`. Achat toujours en vert (`success`), vente en rouge (`error`) : badges, boutons, sélecteur, bouton d'envoi.
+- Ordre (achat/vente) = `OrderForm` uniquement (page Opérations, modale de correction avec `purchase`, et encart `OrderCard` de la fiche) ; ailleurs, un bouton Acheter/Vendre est un lien vers la fiche avec `?side=buy|sell`. Achat toujours en vert (`success`), vente en rouge (`error`) : badges, boutons, sélecteur, bouton d'envoi.
 - Recherche globale = `SearchGlobal` dans l'en-tête (⌘K, `useSearch().openSearch()` depuis une page) ; valider ouvre la fiche, qui marche pour toute valeur cotée.
 - Après un ajout qui touche d'autres listes (ordre, suivi depuis une fiche) : `useDataVersion().bump()` recharge les données et les listes paginées.
 - Date du jour côté navigateur = date locale (`toLocaleDateString('en-CA')`), jamais `toISOString()` (UTC : encore la veille juste après minuit).
