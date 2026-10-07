@@ -15,7 +15,9 @@ import { WebSocket } from 'ws';
 // WebSocket `/stream` de bout en bout : session et origine vérifiées, cotations du flux poussées aux abonnés.
 describe('Price stream (e2e)', () => {
   const email = `e2e-stream-${Date.now()}@example.com`;
-  const origin = process.env.CORS_ORIGIN!;
+  // Origine du front fixée par le test (la CI ne définit pas CORS_ORIGIN).
+  const origin = 'http://patrimo.test';
+  const corsOrigin = process.env.CORS_ORIGIN;
   const stream = new FakePriceStream();
   let app: INestApplication;
   let db: Database;
@@ -23,6 +25,7 @@ describe('Price stream (e2e)', () => {
   let cookie: string;
 
   beforeAll(async () => {
+    process.env.CORS_ORIGIN = origin;
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(PriceStream)
       .useValue(stream)
@@ -45,6 +48,7 @@ describe('Price stream (e2e)', () => {
   afterAll(async () => {
     await db.delete(users).where(eq(users.email, email));
     await app.close();
+    process.env.CORS_ORIGIN = corsOrigin;
   });
 
   const connect = (headers: Record<string, string>) => new WebSocket(url, { headers });
@@ -58,6 +62,11 @@ describe('Price stream (e2e)', () => {
   it('refuses a connection without session or from another site', async () => {
     expect(await closed(connect({ origin }))).toBe(4401);
     expect(await closed(connect({ origin: 'https://evil.example', cookie }))).toBe(4401);
+    expect(await closed(connect({ cookie }))).toBe(4401);
+    // Serveur sans origine configurée : tout est refusé, même une connexion sans en-tête Origin.
+    delete process.env.CORS_ORIGIN;
+    expect(await closed(connect({ cookie }))).toBe(4401);
+    process.env.CORS_ORIGIN = origin;
   });
 
   it('pushes the ticks of the subscribed values until the connection closes', async () => {

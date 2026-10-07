@@ -20,8 +20,10 @@ export class PricesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: WebSocket, req: IncomingMessage) {
     // Pas de CORS pour un WebSocket : sans ce contrôle, un autre site ouvrirait la connexion avec le cookie de session.
+    // Sans CORS_ORIGIN configurée, tout est refusé (sinon une connexion sans en-tête Origin passerait).
+    const origin = process.env.CORS_ORIGIN;
     const allowed =
-      req.headers.origin === process.env.CORS_ORIGIN
+      origin && req.headers.origin === origin
         ? this.authenticate.execute(readSessionCookie(req)).then(
             () => true,
             () => false,
