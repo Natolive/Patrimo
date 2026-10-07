@@ -34,18 +34,20 @@ function connect(url: string) {
 }
 
 // Appelle `onTick` à chaque cotation d'une des valeurs, tant que le composant est affiché.
+// Inscrit dès le setup, pas dans `onMounted` : dans une page qui attend ses données (`await useAsyncData`), un `onMounted`
+// enregistré après l'`await` ne part pas lors d'une navigation, et la page arrivée ne se réabonnait jamais. Ici, la nouvelle
+// page s'inscrit avant que l'ancienne se retire : l'abonnement ne passe jamais par une liste vide. (SPA : `window` existe.)
 export function useLivePrices(symbols: () => string[], onTick: (tick: PriceTickDto) => void) {
   const { public: { apiUrl } } = useRuntimeConfig()
   const listener = { symbols, onTick }
-  onMounted(() => {
-    listeners.add(listener)
-    const url = new URL(`${apiUrl}/stream`, location.href)
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-    connect(url.href)
-    sync()
-  })
+  listeners.add(listener)
+  const url = new URL(`${apiUrl}/stream`, location.href)
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+  connect(url.href)
+  sync()
   watch(() => symbols().join(), sync)
-  onBeforeUnmount(() => {
+  // Fin du composant (démonté, ou navigation annulée avant l'affichage) : il ne compte plus dans l'abonnement.
+  onScopeDispose(() => {
     listeners.delete(listener)
     sync()
   })
@@ -60,5 +62,5 @@ export function useLiveRefresh(symbols: () => string[], refresh: () => unknown) 
       void refresh()
     }, 5000)
   })
-  onBeforeUnmount(() => clearTimeout(timer))
+  onScopeDispose(() => clearTimeout(timer))
 }
