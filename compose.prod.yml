@@ -1,6 +1,7 @@
 # Production (serveur) : lancé par /srv/patrimo/deploy.sh après chaque push sur main.
-# Caddy (stack à part, /srv/caddy) sert https://patrimo.natolive.fr et joint le front via le réseau externe `proxy`.
-# Seul le service `patrimo` rejoint `proxy` (nom unique : les noms de service y sont partagés entre projets).
+# Caddy (stack à part, /srv/caddy) sert https://patrimo.natolive.fr et joint le front via le réseau externe `proxy`,
+# et le back pour le WebSocket des cours (`/api/stream`, que le proxy de Nuxt ne relaie pas).
+# Seuls `patrimo` et `patrimo-api` rejoignent `proxy` (noms uniques : les noms de service y sont partagés entre projets).
 # `.env` à côté de ce fichier (non versionné) : POSTGRES_PASSWORD, IMAGE_TAG.
 name: patrimo
 
@@ -27,7 +28,7 @@ services:
       timeout: 5s
       retries: 20
 
-  backend:
+  patrimo-api:
     <<: *app
     working_dir: /repo/backend
     # Migrations par drizzle-orm (drizzle-kit, outil de dev, n'est pas dans l'image).
@@ -46,13 +47,14 @@ services:
       timeout: 5s
       start_period: 60s
       retries: 5
+    networks: [default, proxy]
 
   patrimo:
     <<: *app
     working_dir: /repo/frontend
     command: node .output/server/index.mjs
     depends_on:
-      backend:
+      patrimo-api:
         condition: service_healthy
     environment:
       <<: *env

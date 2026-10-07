@@ -28,6 +28,6 @@ export default defineNuxtConfig({
   },
   // Prod : l'API passe par le front (/api), un seul domaine.
   $production: {
-    routeRules: { '/api/**': { proxy: 'http://backend:3000/**' } },
+    routeRules: { '/api/**': { proxy: 'http://patrimo-api:3000/**' } },
   },
 })
