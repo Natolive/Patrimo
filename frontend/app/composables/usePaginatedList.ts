@@ -37,8 +37,22 @@ export function usePaginatedList<T>(path: string, query: () => Record<string, st
     await loadMore()
   }
 
+  // Recharge les éléments déjà affichés d'un coup, sans vider la liste (cours en direct).
+  async function refresh() {
+    if (loading.value || !items.value.length) return
+    const current = generation
+    try {
+      const page = await api<PageDto<T>>(path, { query: { ...query(), offset: 0, limit: Math.min(items.value.length, 100) } })
+      if (current !== generation) return
+      items.value = [...page.items, ...items.value.slice(page.items.length)]
+      total.value = page.total
+    } catch {
+      // ponytail: un rafraîchissement raté garde l'affichage ; le suivant réessaie.
+    }
+  }
+
   void loadMore()
   // Opération ou suivi ajouté ailleurs (fenêtre d'ordre) : la liste repart de la première page.
   watch(useDataVersion().version, () => reset())
-  return { items, total, loading, error, done, loadMore, reset }
+  return { items, total, loading, error, done, loadMore, reset, refresh }
 }

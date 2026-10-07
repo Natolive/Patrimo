@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Courbes sur un axe de dates (une séance = un pas), avec réticule et infobulle au survol ou aux flèches du clavier.
-// `markers` : points posés sur la première série (achats) ; `reference` : ligne horizontale (prix de revient).
 export interface ChartSeries {
   key: string
   label: string
@@ -12,8 +11,6 @@ const props = defineProps<{
   dates: string[]
   series: ChartSeries[]
   format: (value: number) => string
-  markers?: { date: string, label: string }[]
-  reference?: { value: number, label: string }
   label: string
 }>()
 
@@ -32,7 +29,6 @@ onBeforeUnmount(() => observer?.disconnect())
 // Graduations rondes (1, 2, 2,5 ou 5 × 10ⁿ) qui encadrent les valeurs.
 const ticks = computed(() => {
   const values = props.series.flatMap((s) => s.values).filter((v): v is number => v !== null)
-  if (props.reference) values.push(props.reference.value)
   const min = Math.min(...values)
   const max = Math.max(...values)
   const raw = (max - min || Math.abs(max) || 1) / 4
@@ -57,16 +53,6 @@ const y = (v: number) => {
 // Trait interrompu là où la série n'a pas de valeur (moyenne mobile pas encore calculable).
 const path = (values: (number | null)[]) =>
   values.reduce((d, v, i) => (v === null ? d : `${d}${d && values[i - 1] != null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`), '')
-
-// Repère posé sur la première séance à partir de sa date (achat un jour sans cotation) ; avant la période affichée, rien.
-const markerPoints = computed(() =>
-  (props.markers ?? []).flatMap((m) => {
-    if (!props.dates[0] || m.date < props.dates[0]) return []
-    const i = props.dates.findIndex((d) => d >= m.date)
-    const v = props.series[0]?.values[i]
-    return i < 0 || v == null ? [] : [{ ...m, i, cx: x(i), cy: y(v) }]
-  }),
-)
 
 const xTicks = computed(() => {
   const n = props.dates.length
@@ -96,7 +82,6 @@ const tooltip = computed(() => {
     flip: left > width.value / 2,
     date: longDate(props.dates[i]!),
     rows: props.series.flatMap((s) => (s.values[i] == null ? [] : [{ ...s, value: props.format(s.values[i]!) }])),
-    markers: markerPoints.value.filter((m) => m.i === i),
   }
 })
 </script>
@@ -106,10 +91,6 @@ const tooltip = computed(() => {
     <figcaption class="mb-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
       <span v-for="s in series" :key="s.key" class="flex items-center gap-2">
         <span class="h-0.5 w-4 rounded-full" :style="{ background: s.color }" />{{ s.label }}
-      </span>
-      <span v-if="reference" class="flex items-center gap-2"><span class="h-px w-4 bg-(--ui-text-muted)" />{{ reference.label }}</span>
-      <span v-if="markerPoints.length" class="flex items-center gap-2">
-        <span class="size-2.5 rounded-full border-2 border-(--ui-bg) bg-(--ui-text-highlighted) ring-1 ring-(--ui-text-highlighted)" />Opérations
       </span>
     </figcaption>
 
@@ -135,11 +116,6 @@ const tooltip = computed(() => {
         </text>
       </g>
 
-      <g v-if="reference">
-        <line :x1="PAD.left" :x2="width - PAD.right" :y1="y(reference.value)" :y2="y(reference.value)" stroke="var(--ui-text-muted)" />
-        <text :x="width - PAD.right" :y="y(reference.value) - 6" text-anchor="end" class="text-xs" fill="var(--ui-text-toned)">{{ reference.label }} {{ format(reference.value) }}</text>
-      </g>
-
       <path
         v-for="s in [...series].reverse()"
         :key="`${s.key}-${dates[0]}-${dates.length}`"
@@ -152,8 +128,6 @@ const tooltip = computed(() => {
         stroke-linejoin="round"
         stroke-linecap="round"
       />
-
-      <circle v-for="m in markerPoints" :key="`${m.date}-${m.label}`" :cx="m.cx" :cy="m.cy" r="5" fill="var(--ui-text-highlighted)" stroke="var(--ui-bg)" stroke-width="2" />
 
       <g v-if="active !== null">
         <line :x1="x(active)" :x2="x(active)" :y1="PAD.top" :y2="HEIGHT - PAD.bottom" stroke="var(--ui-text-dimmed)" />
@@ -173,9 +147,6 @@ const tooltip = computed(() => {
         <span class="h-0.5 w-3 rounded-full" :style="{ background: row.color }" />
         <span class="text-highlighted font-semibold tabular-nums">{{ row.value }}</span>
         <span class="text-muted">{{ row.label }}</span>
-      </p>
-      <p v-for="m in tooltip.markers" :key="m.label" class="text-highlighted mt-2 flex items-center gap-2 font-medium">
-        <UIcon name="i-lucide-receipt-euro" class="size-4" />{{ m.label }}
       </p>
     </div>
   </figure>

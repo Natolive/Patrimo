@@ -8,7 +8,8 @@ const api = useApi()
 const toast = useToast()
 const { openSearch } = useSearch()
 // Chargées page par page au défilement (les cours ne sont demandés que pour la page).
-const { items: watches, total, loading, error, done, loadMore, reset } = usePaginatedList<WatchDto>('/watches')
+const { items: watches, total, loading, error, done, loadMore, reset, refresh } = usePaginatedList<WatchDto>('/watches')
+useLiveRefresh(() => watches.value.map((w) => w.symbol), refresh)
 
 const link = (w: WatchDto) => `/assets/${encodeURIComponent(w.symbol)}`
 
@@ -73,8 +74,10 @@ const columns: TableColumn<WatchDto>[] = [
           </NuxtLink>
         </template>
         <template #price-cell="{ row }">
-          <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
-          <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+          <div :key="row.original.symbol" v-tick="row.original.price" class="tick-cell">
+            <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
+            <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+          </div>
         </template>
         <template v-for="period in ['1m', '1y'] as const" :key="period" #[`${period}-cell`]="{ row }">
           <span v-if="row.original.trend.performance[period] !== null" :class="gainClass(row.original.trend.performance[period]!)">

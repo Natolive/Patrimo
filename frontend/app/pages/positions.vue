@@ -7,6 +7,7 @@ useHead({ title: 'Positions' })
 
 const api = useApi()
 const { data, error, refresh } = await useAsyncData('portfolio', () => api<PortfolioDto>('/portfolio'))
+useLiveRefresh(() => data.value?.positions.map((p) => p.symbol) ?? [], refresh)
 
 // Filtres : recherche (nom ou symbole) et vue rapide.
 const search = ref('')
@@ -97,7 +98,7 @@ const lessons = [
     <div>
       <h1 class="text-highlighted text-2xl font-bold tracking-tight">Positions</h1>
       <p class="text-muted mt-1">
-        {{ data?.positions.length ?? 0 }} ligne{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} détenue{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} · cours différés, mis à jour toutes les 10 minutes.
+        {{ data?.positions.length ?? 0 }} ligne{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} détenue{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} · cours en direct (différés de 15 minutes à Paris).
       </p>
     </div>
 
@@ -120,9 +121,9 @@ const lessons = [
 
     <template v-else-if="data">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Valorisation" :value="money(data.value)" :hint="`${data.positions.length} lignes`" />
+        <StatTile label="Valorisation" :tick="data.value" :value="money(data.value)" :hint="`${data.positions.length} lignes`" />
         <StatTile label="Coût des titres détenus" :value="money(data.invested)" hint="Frais compris" />
-        <StatTile label="Plus-value latente" :value="signedMoney(data.gain)" :delta="percent(data.gainRate)" :delta-value="data.gain" />
+        <StatTile label="Plus-value latente" :tick="data.gain" :value="signedMoney(data.gain)" :delta="percent(data.gainRate)" :delta-value="data.gain" />
         <StatTile label="Plus-value réalisée" :value="signedMoney(data.realizedGain)" :delta="data.dividends ? `${signedMoney(data.dividends)} de dividendes` : undefined" :delta-value="data.dividends" :hint="data.closed.length ? `dont ${data.closed.length} ligne${data.closed.length > 1 ? 's' : ''} soldée${data.closed.length > 1 ? 's' : ''}` : 'Par tes ventes'" />
       </div>
 
@@ -155,7 +156,7 @@ const lessons = [
         </template>
         <!-- Téléphone : une carte par ligne (le tableau ne tient pas) ; un appui ouvre la fiche et son encart d'ordre. -->
         <ul class="divide-default divide-y sm:hidden">
-          <li v-for="p in positions" :key="p.symbol">
+          <li v-for="p in positions" :key="p.symbol" v-tick="p.value">
             <NuxtLink :to="link(p)" class="flex items-center justify-between gap-4 px-4 py-3 tabular-nums">
               <span class="min-w-0">
                 <span class="text-highlighted block truncate font-medium">{{ p.name }}</span>
@@ -178,11 +179,13 @@ const lessons = [
           </template>
           <template #averageCost-cell="{ row }">{{ unitMoney(row.original.averageCost, row.original.currency) }}</template>
           <template #price-cell="{ row }">
-            <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
-            <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+            <div :key="row.original.symbol" v-tick="row.original.price" class="tick-cell">
+              <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
+              <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+            </div>
           </template>
           <template #value-cell="{ row }">
-            <span class="text-highlighted font-medium">{{ money(row.original.value, row.original.currency) }}</span>
+            <span :key="row.original.symbol" v-tick="row.original.value" class="tick-cell text-highlighted font-medium">{{ money(row.original.value, row.original.currency) }}</span>
           </template>
           <template #weight-cell="{ row }">
             <div class="ms-auto flex w-28 items-center gap-2">
@@ -191,8 +194,10 @@ const lessons = [
             </div>
           </template>
           <template #gain-cell="{ row }">
-            <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
-            <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+            <div :key="row.original.symbol" v-tick="row.original.gain" class="tick-cell">
+              <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
+              <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+            </div>
           </template>
           <template #realizedGain-cell="{ row }">
             <span v-if="row.original.realizedGain" :class="gainClass(row.original.realizedGain)">{{ signedMoney(row.original.realizedGain, row.original.currency) }}</span>

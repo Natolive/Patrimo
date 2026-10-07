@@ -1,3 +1,4 @@
+import type { CandleSeries } from '@src/market/domain/candle.entity.js';
 import type { AssetSuggestion } from '@src/market/domain/asset-suggestion.entity.js';
 import type { Instrument } from '@src/market/domain/instrument.entity.js';
 import { MarketData } from '@src/market/domain/market-data.js';
@@ -41,5 +42,11 @@ export class FakeMarketData extends MarketData {
 
   async history(symbol: string) {
     return this.histories.get(symbol) ?? [];
+  }
+
+  // Une bougie par clôture de l'historique (ouverture = plus bas = plus haut = clôture), quelle que soit la période.
+  async candles(symbol: string): Promise<CandleSeries> {
+    const candles = (this.histories.get(symbol) ?? []).map((p) => ({ time: Date.parse(p.date) / 1000, open: p.close, high: p.close, low: p.close, close: p.close, volume: 0 }));
+    return { offset: 0, candles };
   }
 }

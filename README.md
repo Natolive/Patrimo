@@ -58,7 +58,8 @@ Toutes les lignes détenues, de façon technique mais lisible :
 
 - **Passer un ordre** : encart Achat (vert) / Vente (rouge), date du jour, prix prérempli au dernier cours ; à droite sur grand écran, juste sous l'en-tête sur téléphone. La fiche se met à jour aussitôt (position, opérations).
 - **Suivre** : bouton sous le cours si la valeur n'est pas encore suivie.
-- **Cours** sur 1 mois à 5 ans, avec les **moyennes mobiles** sur 50 et 200 séances, ses **opérations** et son **PRU** sur la courbe.
+- **Cours en direct** en tête de fiche : il change à chaque transaction, sans recharger la page.
+- **Graphique boursier en bougies** (ouverture, plus haut, plus bas, clôture) avec les volumes échangés : 1 jour en bougies de 5 minutes, 5 jours en 15 minutes, 1 mois en heures, 6 mois à 5 ans en séances. La bougie en cours bouge en direct. Zoom à la molette ou au pincement, glisser pour remonter le temps ; au survol, le détail de la bougie s'affiche au-dessus. Sur 6 mois à 5 ans, les **moyennes mobiles** sur 50 et 200 séances ; toujours, ses **opérations** (flèche verte pour un achat, rouge pour une vente, point bleu pour un dividende) et son **PRU** en pointillé.
 - **Tendance**, expliquée en une phrase :
   - **haussière** : le cours et la moyenne sur 50 séances sont au-dessus de celle sur 200 ;
   - **baissière** : les deux sont en dessous ;
@@ -92,7 +93,7 @@ Les valeurs qu'on surveille, détenues ou non : cours et variation du jour, 1 mo
 
 ### Bon à savoir
 
-- **Cours différés** (environ 15 minutes), rafraîchis toutes les 10 minutes : pour suivre, pas pour passer un ordre à la seconde.
+- **Cours en direct, mais avec le différé de la place** : 15 minutes à Paris, comme sur les sites boursiers gratuits. Tableau de bord, Positions, Suivi et fiche se mettent à jour d'eux-mêmes à chaque transaction (au plus toutes les 5 secondes pour les totaux) : une carte ou une cellule qui change s'éclaire brièvement en vert si elle monte, en rouge si elle baisse (pas d'animation si le système demande moins de mouvements). Pour suivre, pas pour passer un ordre à la seconde.
 - **Prix de revient** au prix moyen pondéré, la méthode fiscale française (PEA et compte-titres) : une vente ne change pas le PRU, la différence avec le prix de vente est la plus-value réalisée.
 - **Dividendes** comptés à part : ni dans le PRU, ni dans la plus-value réalisée, ni dans la courbe d'évolution (ce sont des espèces, qui ne sont pas suivies). Ils ne sont pas retrouvés automatiquement : à saisir depuis l'avis de versement.
 - **Montants additionnés tels quels**, sans conversion de devise : prévu pour un portefeuille en euros (un PEA l'est toujours).
@@ -133,21 +134,25 @@ Espace de travail npm, un seul lockfile, stack reprise de footix :
   - `purchases` : opérations (achats, ventes et dividendes ; la table porte le nom d'avant les ventes).
   - `portfolio` : positions et lignes soldées, PRU, plus-values, tendance, historique, en fonctions pures.
   - `watchlist` : valeurs suivies, leurs mots-clés et le fil d'actualités.
-  - `market` : recherche de valeurs, cours, dernier prix et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance).
+  - `market` : recherche de valeurs, cours, bougies, dernier prix et séances des places asiatiques (port `MarketData`, adaptateur Yahoo Finance) ; cours en direct (port `PriceStream`, adaptateur sur le flux WebSocket de Yahoo : une seule connexion pour tout le serveur, une valeur écoutée tant qu'un navigateur la demande), poussés aux navigateurs par le WebSocket `/stream` de l'API (session et origine vérifiées à l'ouverture, message `subscribe` avec la liste des valeurs, réponses `tick`). La dernière cotation reçue remplace la clôture du jour dans l'historique (`withLivePrice`).
   - `news` : actualités (port `NewsFeed`, adaptateur Google Actualités).
-- `frontend/` — Nuxt (SPA) + Nuxt UI, graphiques et logo en SVG maison (`components/brand/`), police Space Grotesk pour les titres.
+- `frontend/` — Nuxt (SPA) + Nuxt UI, graphique boursier de la fiche avec lightweight-charts (`ChartCandles`), autres graphiques et logo en SVG maison (`components/brand/`), police Space Grotesk pour les titres. Une seule connexion WebSocket par onglet (`useLivePrices`), chaque page y écoute ses valeurs.
 
 ### Sources de données
 
 | Donnée | Source | Clé | Cache |
 |---|---|---|---|
-| Recherche par ISIN, cours sur 5 ans | Yahoo Finance (API publique non documentée) | Non | 10 min en mémoire |
+| Recherche par ISIN, cours sur 5 ans | Yahoo Finance (API publique non documentée) | Non | 10 min en mémoire (cours du jour pris dans le flux direct) |
+| Bougies du graphique (5 min à la séance) | Yahoo Finance, même API | Non | Aucun (direct ensuite par le flux) |
+| Cours en direct | Flux WebSocket de Yahoo Finance (`wss://streamer.finance.yahoo.com`, messages protobuf décodés dans `yahoo-pricing.ts`) ; différé de la place | Non | Dernière cotation en mémoire |
 | Actualités | Google Actualités (flux RSS public, édition française) | Non | 30 min en mémoire |
 | Logos des éditeurs | Service de favicons de Google | Non | Navigateur |
 | Horaires Paris et New York | Calcul local (`shared/src/markets/market-hours.ts`) | — | — |
 | Séances des places asiatiques | Yahoo Finance, via l'indice de chaque place (`^HSI`, `000001.SS`…) | Non | Relues toutes les 10 min par l'accueil |
 
-Chaque source est derrière un port : la remplacer ne touche qu'un adaptateur. Si les actualités sont en panne, la page s'affiche sans elles. Si les cours le sont, un message propose de réessayer.
+Chaque source est derrière un port : la remplacer ne touche qu'un adaptateur. Si les actualités sont en panne, la page s'affiche sans elles. Si les cours le sont, un message propose de réessayer. Si le flux direct coupe, le serveur et le navigateur se reconnectent toutes les 5 s ; les pages restent sur les derniers cours chargés.
+
+En prod, le WebSocket passe par `/api/stream` : le proxy de Nuxt ne relaie pas les WebSockets, Caddy doit envoyer ce chemin directement au back (`handle_path /api/stream { rewrite * /stream; reverse_proxy <back>:3000 }`).
 
 ### Développement
 

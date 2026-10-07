@@ -39,5 +39,7 @@ import { ScryptPasswordHasher } from './infrastructure/scrypt-password-hasher.js
     { provide: PasswordHasher, useClass: ScryptPasswordHasher },
     { provide: SessionRepository, useClass: DrizzleSessionRepository },
   ],
+  // Le WebSocket des cours vérifie la session lui-même (pas de guard sur une connexion).
+  exports: [AuthenticateService],
 })
 export class AuthModule {}

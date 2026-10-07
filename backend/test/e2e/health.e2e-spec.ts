@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@src/app.module.js';
 import request from 'supertest';
@@ -10,6 +11,7 @@ describe('Health (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
+    app.useWebSocketAdapter(new WsAdapter(app));
     app.enableShutdownHooks();
     await app.init();
   });
