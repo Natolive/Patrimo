@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@src/app.module.js';
 import { ScryptPasswordHasher } from '@src/auth/infrastructure/scrypt-password-hasher.js';
@@ -25,6 +26,7 @@ describe('Portfolio (e2e)', () => {
       .useValue(new FakeNewsFeed())
       .compile();
     app = moduleRef.createNestApplication();
+    app.useWebSocketAdapter(new WsAdapter(app));
     await app.init();
     db = app.get(DB);
     await db.insert(users).values({ email, firstName: 'Léa', lastName: 'Dupont', passwordHash: await new ScryptPasswordHasher().hash('12345678') });
@@ -46,6 +48,8 @@ describe('Portfolio (e2e)', () => {
     await http.get('/markets/search?q=a').expect(400);
     expect((await http.get('/markets/price/AI.PA').expect(200)).body).toEqual({ symbol: 'AI.PA', price: 120, date: '2026-01-06' });
     await http.get('/markets/price/NOPE').expect(400);
+    expect((await http.get('/markets/candles/AI.PA?range=5d').expect(200)).body.candles).toHaveLength(3);
+    await http.get('/markets/candles/AI.PA?range=2h').expect(400);
     expect((await http.get('/markets/sessions').expect(200)).body).toEqual([{ key: 'hongKong', start: '2026-10-06T01:30:00.000Z', end: '2026-10-06T08:10:00.000Z', lastSession: '2026-10-05' }]);
 
     await http.post('/purchases').send({ asset: 'FR0000120073', boughtAt: '2026-01-02', quantity: 'abc', unitPrice: '100', fees: '0' }).expect(400);
@@ -101,6 +105,13 @@ describe('Portfolio (e2e)', () => {
     expect(afterSale.positions[0].quantity).toBe(6);
     expect(afterSale.realizedGain).toBeCloseTo(479 - 0.4 * 1007.04);
     await http.delete(`/purchases/${bought.id}`).expect(400);
+    // Dividende : 6 titres × 1,50 €, à part de la plus-value réalisée.
+    const { body: dividend } = await http
+      .post('/purchases')
+      .send({ side: 'dividend', asset: 'AI.PA', boughtAt: '2026-01-07', quantity: '6', unitPrice: '1,5', fees: '0' })
+      .expect(201);
+    expect((await http.get('/portfolio').expect(200)).body).toMatchObject({ dividends: 9, positions: [{ quantity: 6, dividends: 9 }] });
+    await http.delete(`/purchases/${dividend.id}`).expect(204);
     // Correction : frais remboursés, puis une quantité qui laisserait la vente à découvert.
     const corrected = { asset: 'AI.PA', boughtAt: '2026-01-02', quantity: '10', unitPrice: '100,505', fees: '0' };
     expect((await http.put(`/purchases/${bought.id}`).send(corrected).expect(200)).body).toMatchObject({ id: bought.id, fees: 0, total: 1005.05 });

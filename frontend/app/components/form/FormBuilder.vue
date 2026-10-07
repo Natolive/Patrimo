@@ -15,7 +15,7 @@ defineProps<{
   /** Affiche les valeurs sans bouton d'envoi. */
   readonly?: boolean
   /** Couleur du bouton d'envoi (ex. `error` pour une vente), `primary` par défaut. */
-  submitColor?: 'primary' | 'success' | 'error'
+  submitColor?: 'primary' | 'success' | 'error' | 'info'
 }>()
 const state = defineModel<T>('state', { required: true })
 

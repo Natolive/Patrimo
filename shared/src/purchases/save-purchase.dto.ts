@@ -6,13 +6,14 @@ import { TRADE_SIDES } from './trade-side.ts'
 // sans dépendre de l'heure du serveur (sinon, entre minuit et 2 h à Paris, la date du jour serait refusée).
 const latestToday = () => new Date(Date.now() + 14 * 3600 * 1000).toISOString().slice(0, 10)
 
-// Opération d'un avis d'opéré : achat ou vente (le nom « purchase » est resté de la version sans ventes).
+// Opération d'un avis d'opéré : achat, vente ou dividende (le nom « purchase » est resté de la version sans ventes) ;
+// dividende = titres détenus × montant par titre, retenues dans les frais.
 export const purchaseSchema = z.object({
-  side: z.enum(TRADE_SIDES, 'Choisis achat ou vente.').default('buy'),
+  side: z.enum(TRADE_SIDES, 'Choisis achat, vente ou dividende.').default('buy'),
   // Code ISIN (sur l'avis d'opéré du courtier) ou mnémonique : la valeur est retrouvée par l'API.
   asset: z.string('Saisis le code ISIN ou le mnémonique.').trim().min(2, 'Saisis le code ISIN (ex. FR0000120073) ou le mnémonique (ex. CW8).').max(40),
   boughtAt: z.iso
-    .date('Choisis la date d’achat.')
+    .date('Choisis la date de l’opération.')
     .refine((d) => d <= latestToday(), 'Choisis une date passée ou aujourd’hui.'),
   quantity: numberField('Indique le nombre de titres.').pipe(z.number().positive('Indique au moins une fraction de titre.')),
   unitPrice: numberField('Indique le prix unitaire.').pipe(z.number().positive('Indique un prix supérieur à 0.')),

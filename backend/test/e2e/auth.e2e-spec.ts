@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { WsAdapter } from '@nestjs/platform-ws';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '@src/app.module.js';
 import { DB, type Database } from '@src/common/infrastructure/database/database.module.js';
@@ -18,6 +19,7 @@ describe('Auth (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
+    app.useWebSocketAdapter(new WsAdapter(app));
     await app.init();
     db = app.get(DB);
     // Pas d'inscription : compte créé comme par `npm run user:create`.

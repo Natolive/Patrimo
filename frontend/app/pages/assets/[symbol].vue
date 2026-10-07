@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TRADE_SIDE_LABELS, type AssetDto, type PurchaseDto, type TrendPeriod, type WatchDto } from '@patrimo/shared'
+import { TRADE_SIDE_LABELS, type AssetDto, type CandlesDto, type PriceTickDto, type PurchaseDto, type TrendPeriod, type WatchDto } from '@patrimo/shared'
 
 const route = useRoute()
 const symbol = computed(() => String(route.params.symbol))
@@ -7,8 +7,52 @@ const api = useApi()
 const { data, error, refresh } = await useAsyncData(`asset:${symbol.value}`, () => api<AssetDto>(`/portfolio/${encodeURIComponent(symbol.value)}`))
 useHead({ title: () => data.value?.name ?? symbol.value })
 
-const range = ref<RangeLabel>('1A')
-const points = computed(() => inRange(data.value?.points ?? [], range.value))
+// Périodes du graphique : 1J à 1M en intraday ; 6M à 5A sur les séances de 5 ans, cadrées sur la période (zoom libre ensuite).
+const PERIODS = [
+  { label: '1J', range: '1d', step: 300 },
+  { label: '5J', range: '5d', step: 900 },
+  { label: '1M', range: '1mo', step: 3600 },
+  { label: '6M', range: '5y', step: 86_400, months: 6 },
+  { label: '1A', range: '5y', step: 86_400, months: 12 },
+  { label: '5A', range: '5y', step: 86_400 },
+] as const
+const period = ref<(typeof PERIODS)[number]['label']>('1J')
+const current = computed(() => PERIODS.find((p) => p.label === period.value)!)
+const { data: series } = useAsyncData(
+  () => `candles:${symbol.value}:${current.value.range}`,
+  () => api<CandlesDto>(`/markets/candles/${encodeURIComponent(symbol.value)}`, { query: { range: current.value.range } }),
+  { lazy: true },
+)
+const from = computed(() => {
+  const last = series.value?.candles.at(-1)
+  if (!('months' in current.value) || !last) return undefined
+  const date = new Date(last.time * 1000)
+  date.setUTCMonth(date.getUTCMonth() - current.value.months)
+  return date.getTime() / 1000
+})
+// Moyennes mobiles (calculées sur les séances) : seulement sur les périodes en séances.
+const overlays = computed(() => {
+  if (current.value.range !== '5y' || !data.value) return []
+  const line = (key: 'sma50' | 'sma200') =>
+    data.value!.points.flatMap((p) => (p[key] === null ? [] : [{ time: Date.parse(p.date) / 1000, value: p[key]! }]))
+  return [
+    { key: 'sma50', label: 'MM 50 séances', color: 'var(--color-chart-2)', points: line('sma50') },
+    { key: 'sma200', label: 'MM 200 séances', color: 'var(--color-chart-3)', points: line('sma200') },
+  ]
+})
+
+// Direct : la dernière cotation met à jour l'en-tête et la bougie en cours ; les tuiles (valorisation…) sont relues.
+const chart = ref<{ push: (tick: PriceTickDto) => void }>()
+const live = ref<PriceTickDto>()
+watch(symbol, () => (live.value = undefined))
+useLivePrices(() => [symbol.value], (tick) => {
+  live.value = tick
+  chart.value?.push(tick)
+})
+useLiveRefresh(() => [symbol.value], refresh)
+const price = computed(() => live.value?.price ?? data.value?.price ?? 0)
+const dayChangeRate = computed(() => live.value?.changeRate ?? data.value?.dayChangeRate ?? 0)
+
 const currency = computed(() => data.value?.currency ?? 'EUR')
 // Tableau « Mes opérations » chargé page par page ; la courbe garde toutes les opérations (repères).
 const trades = usePaginatedList<PurchaseDto>('/purchases', () => ({ symbol: symbol.value }))
@@ -27,7 +71,11 @@ async function follow() {
 }
 
 const markers = computed(() =>
-  (data.value?.purchases ?? []).map((p) => ({ date: p.boughtAt, label: `${TRADE_SIDE_LABELS[p.side]} ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}` })),
+  (data.value?.purchases ?? []).map((p) => ({
+    time: Date.parse(p.boughtAt) / 1000,
+    side: p.side,
+    label: `${TRADE_SIDE_LABELS[p.side]} ${quantity(p.quantity)} × ${unitMoney(p.unitPrice, p.currency)}`,
+  })),
 )
 
 const periods: { key: TrendPeriod, label: string }[] = [
@@ -76,8 +124,8 @@ const reading = computed(() => {
             <h1 class="text-highlighted text-2xl font-bold tracking-tight">{{ data.name }}</h1>
           </div>
           <div class="text-right">
-            <p class="text-highlighted text-3xl font-semibold">{{ unitMoney(data.price, currency) }}</p>
-            <p class="font-medium tabular-nums" :class="gainClass(data.dayChangeRate)">{{ percent(data.dayChangeRate) }} aujourd’hui</p>
+            <p v-tick="price" class="tick-cell text-highlighted text-3xl font-semibold tabular-nums">{{ unitMoney(price, currency) }}</p>
+            <p class="font-medium tabular-nums" :class="gainClass(dayChangeRate)">{{ percent(dayChangeRate) }} aujourd’hui</p>
             <UButton v-if="!data.watchId" label="Suivre" icon="i-lucide-eye" color="neutral" variant="outline" class="mt-3" loading-auto @click="follow" />
           </div>
         </div>
@@ -86,9 +134,10 @@ const reading = computed(() => {
         <OrderCard :symbol="data.symbol" :price="data.price" class="xl:hidden" />
 
         <div v-if="data.position" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile label="Valorisation" :value="money(data.position.value, currency)" :hint="`${percent(data.position.weight, false)} du portefeuille`" />
+          <StatTile label="Valorisation" :tick="data.position.value" :value="money(data.position.value, currency)" :hint="`${percent(data.position.weight, false)} du portefeuille`" />
           <StatTile
             label="Plus ou moins-value"
+            :tick="data.position.gain"
             :value="signedMoney(data.position.gain, currency)"
             :delta="percent(data.position.gainRate)"
             :delta-value="data.position.gain"
@@ -100,22 +149,26 @@ const reading = computed(() => {
         <UCard>
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-3">
-              <h2 class="text-highlighted font-semibold">Cours et moyennes mobiles</h2>
-              <UTabs v-model="range" :items="RANGES.map((r) => ({ label: r.label, value: r.label }))" :content="false" size="xs" />
+              <h2 class="text-highlighted font-semibold">Cours</h2>
+              <UTabs v-model="period" :items="PERIODS.map((p) => ({ label: p.label, value: p.label }))" :content="false" size="xs" />
             </div>
           </template>
-          <ChartLine
-            :label="`Cours de ${data.name} avec ses moyennes mobiles 50 et 200 séances${data.position ? ' et tes achats' : ''}`"
-            :dates="points.map((p) => p.date)"
-            :series="[
-              { key: 'close', label: 'Cours', color: 'var(--color-chart-1)', values: points.map((p) => p.close) },
-              { key: 'sma50', label: 'MM 50 séances', color: 'var(--color-chart-2)', values: points.map((p) => p.sma50) },
-              { key: 'sma200', label: 'MM 200 séances', color: 'var(--color-chart-3)', values: points.map((p) => p.sma200) },
-            ]"
+          <ChartCandles
+            v-if="series?.candles.length"
+            ref="chart"
+            :label="`Cours de ${data.name} en bougies${current.range === '5y' ? ' avec ses moyennes mobiles 50 et 200 séances' : ''}${data.position ? ' et tes opérations' : ''}`"
+            :candles="series.candles"
+            :offset="series.offset"
+            :step="current.step"
+            :intraday="current.range !== '5y'"
+            :currency="currency"
+            :from="from"
+            :overlays="overlays"
             :markers="markers"
             :reference="data.position ? { value: data.position.averageCost, label: 'PRU' } : undefined"
-            :format="(v) => money(v, currency)"
           />
+          <p v-else-if="series" class="text-muted py-24 text-center text-sm">Pas de cotation sur cette période.</p>
+          <USkeleton v-else class="h-80 sm:h-96" />
         </UCard>
 
         <div class="grid gap-6 lg:grid-cols-2">
@@ -185,7 +238,7 @@ const reading = computed(() => {
           >
             <template #boughtAt-cell="{ row }">{{ longDate(row.original.boughtAt) }}</template>
             <template #side-cell="{ row }">
-            <UBadge :label="TRADE_SIDE_LABELS[row.original.side]" :color="row.original.side === 'buy' ? 'success' : 'error'" variant="subtle" />
+            <UBadge :label="TRADE_SIDE_LABELS[row.original.side]" :color="SIDE_COLOR[row.original.side]" variant="subtle" />
           </template>
             <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
             <template #unitPrice-cell="{ row }">{{ unitMoney(row.original.unitPrice, currency) }}</template>

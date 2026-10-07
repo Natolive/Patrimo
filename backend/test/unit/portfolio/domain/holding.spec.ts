@@ -4,7 +4,7 @@ import { bought } from './purchase.js';
 describe('holding', () => {
   it('keeps the average cost on a sale and books the realized gain', () => {
     const afterBuys = [bought({ quantity: 10, unitPrice: 100, fees: 5 }), bought({ quantity: 10, unitPrice: 120, fees: 5 })].reduce(applyTrade, emptyHolding());
-    expect(afterBuys).toEqual({ quantity: 20, cost: 2210, realizedGain: 0 });
+    expect(afterBuys).toEqual({ quantity: 20, cost: 2210, realizedGain: 0, dividends: 0 });
     // PRU 110,50 : vendre 5 à 130 avec 2 € de frais rapporte 5 × 130 − 2 − 5 × 110,50.
     const afterSale = applyTrade(afterBuys, bought({ side: 'sell', quantity: 5, unitPrice: 130, fees: 2 }));
     expect(afterSale.quantity).toBe(15);
@@ -23,16 +23,23 @@ describe('holding', () => {
   });
 
   it('books a sale without shares as a pure gain (never saved: refused before)', () => {
-    expect(applyTrade(emptyHolding(), bought({ side: 'sell', quantity: 1, unitPrice: 10 }))).toEqual({ quantity: -1, cost: 0, realizedGain: 10 });
+    expect(applyTrade(emptyHolding(), bought({ side: 'sell', quantity: 1, unitPrice: 10 }))).toEqual({ quantity: -1, cost: 0, realizedGain: 10, dividends: 0 });
   });
 
-  it('orders by date, buys before sales the same day, then by entry', () => {
+  it('books a dividend apart, without touching the shares nor the average cost', () => {
+    const afterBuy = applyTrade(emptyHolding(), bought({ quantity: 10, unitPrice: 100, fees: 5 }));
+    // 10 titres × 2,50 €, 1 € retenu.
+    expect(applyTrade(afterBuy, bought({ side: 'dividend', quantity: 10, unitPrice: 2.5, fees: 1 }))).toEqual({ ...afterBuy, dividends: 24 });
+  });
+
+  it('orders by date, buys then sales then dividends the same day, then by entry', () => {
+    const dividend = bought({ id: 'dividend', side: 'dividend', boughtAt: '2026-01-02' });
     const sale = bought({ id: 'sale', side: 'sell', boughtAt: '2026-01-02' });
     const buy = bought({ id: 'buy', boughtAt: '2026-01-02' });
     const early = bought({ id: 'early', boughtAt: '2026-01-01' });
     const first = bought({ id: 'first', boughtAt: '2026-01-03', createdAt: new Date(1) });
     const second = bought({ id: 'second', boughtAt: '2026-01-03', createdAt: new Date(2) });
-    expect(chronological([second, sale, first, buy, early]).map((t) => t.id)).toEqual(['early', 'buy', 'sale', 'first', 'second']);
+    expect(chronological([second, dividend, sale, first, buy, early]).map((t) => t.id)).toEqual(['early', 'buy', 'sale', 'dividend', 'first', 'second']);
   });
 
   it('finds the first sale of more shares than held, per value', () => {

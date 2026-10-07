@@ -1,6 +1,6 @@
 import type { TradeSide } from '@patrimo/shared';
 
-// Opération (achat ou vente) ; le nom date de la version sans ventes.
+// Opération (achat, vente ou dividende) ; le nom date de la version sans ventes.
 export interface Purchase {
   id: string;
   side: TradeSide;

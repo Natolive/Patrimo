@@ -11,7 +11,8 @@ const baseOptions = (): CookieOptions => ({
 });
 
 // ponytail: lecture manuelle du header plutôt que cookie-parser, on ne lit qu'un cookie.
-export function readSessionCookie(req: Request): string | undefined {
+// Requête HTTP ou ouverture d'un WebSocket : seul l'en-tête compte.
+export function readSessionCookie(req: Pick<Request, 'headers'>): string | undefined {
   const entry = req.headers.cookie?.split('; ').find((c) => c.startsWith(`${SESSION_COOKIE}=`));
   return entry?.slice(SESSION_COOKIE.length + 1);
 }

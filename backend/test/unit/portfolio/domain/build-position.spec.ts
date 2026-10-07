@@ -10,7 +10,7 @@ describe('buildPosition', () => {
         { date: '2026-01-05', close: 125 },
       ],
     );
-    expect(position).toMatchObject({ symbol: 'AI.PA', quantity: 15, invested: 1660, price: 125, value: 1875, gain: 215, dayChange: 375, realizedGain: 0 });
+    expect(position).toMatchObject({ symbol: 'AI.PA', quantity: 15, invested: 1660, price: 125, value: 1875, gain: 215, dayChange: 375, realizedGain: 0, dividends: 0 });
     expect(position.averageCost).toBeCloseTo(110.667, 3);
     expect(position.gainRate).toBeCloseTo(1875 / 1660 - 1);
     expect(position.dayChangeRate).toBeCloseTo(0.25);
@@ -26,6 +26,14 @@ describe('buildPosition', () => {
       [{ date: '2026-01-05', close: 125 }],
     );
     expect(position).toMatchObject({ quantity: 6, invested: 600, averageCost: 100, value: 750, gain: 150, realizedGain: 80 });
+  });
+
+  it('adds up the dividends without changing the average cost', () => {
+    const position = buildPosition(
+      [bought({ quantity: 10, unitPrice: 100 }), bought({ side: 'dividend', boughtAt: '2026-01-05', quantity: 10, unitPrice: 3, fees: 0 })],
+      [{ date: '2026-01-05', close: 100 }],
+    );
+    expect(position).toMatchObject({ quantity: 10, averageCost: 100, gain: 0, realizedGain: 0, dividends: 30 });
   });
 
   it('keeps only the realized gain of a closed line', () => {

@@ -1,0 +1,1 @@
+ALTER TYPE "public"."trade_side" ADD VALUE 'dividend';

@@ -7,6 +7,7 @@ useHead({ title: 'Positions' })
 
 const api = useApi()
 const { data, error, refresh } = await useAsyncData('portfolio', () => api<PortfolioDto>('/portfolio'))
+useLiveRefresh(() => data.value?.positions.map((p) => p.symbol) ?? [], refresh)
 
 // Filtres : recherche (nom ou symbole) et vue rapide.
 const search = ref('')
@@ -73,6 +74,7 @@ const columns: TableColumn<PositionDto>[] = [
   { accessorKey: 'weight', header: sortable('Poids', 'Part de cette ligne dans la valorisation totale.'), meta: { class: shown.md } },
   { accessorKey: 'gain', header: sortable('+/- latente', 'Gain ou perte si tu vendais au cours actuel : valorisation moins coût d’achat.'), meta: { class: right } },
   { accessorKey: 'realizedGain', header: sortable('Réalisée', 'Gain ou perte déjà encaissé par tes ventes sur cette valeur.'), meta: { class: shown['2xl'] } },
+  { accessorKey: 'dividends', header: sortable('Dividendes', 'Dividendes encaissés sur cette valeur, retenues déduites.'), meta: { class: shown['2xl'] } },
   { id: 'trend', accessorFn: (p) => p.trend.signal ?? '', header: sortable('Tendance', 'Haussière : cours et moyenne 50 séances au-dessus de la moyenne 200. Baissière : les deux en dessous.'), meta: { class: shown.sm } },
   { id: 'perf1y', accessorFn: (p) => p.trend.performance['1y'] ?? -Infinity, header: sortable('1 an', 'Variation du cours sur un an.'), meta: { class: shown.lg } },
   { id: 'vsSma200', accessorFn: (p) => vsSma200(p) ?? -Infinity, header: sortable('vs MM200', 'Écart du cours à sa moyenne des 200 dernières séances : au-dessus, la tendance de fond est positive.'), meta: { class: shown.xl } },
@@ -83,7 +85,7 @@ const columns: TableColumn<PositionDto>[] = [
 const sorting = ref([{ id: 'value', desc: true }])
 
 const lessons = [
-  { label: 'Valorisation, coût et plus-value', icon: 'i-lucide-calculator', content: 'La valorisation est ce que vaut la ligne au dernier cours (quantité × cours). Le coût est ce que tu as payé pour les titres encore détenus, frais compris. La plus-value latente est la différence : elle n’est acquise que si tu vends. La plus-value réalisée, elle, est déjà encaissée par tes ventes.' },
+  { label: 'Valorisation, coût et plus-value', icon: 'i-lucide-calculator', content: 'La valorisation est ce que vaut la ligne au dernier cours (quantité × cours). Le coût est ce que tu as payé pour les titres encore détenus, frais compris. La plus-value latente est la différence : elle n’est acquise que si tu vends. La plus-value réalisée, elle, est déjà encaissée par tes ventes ; les dividendes sont comptés à part, ils ne changent pas le PRU.' },
   { label: 'PRU (prix de revient unitaire)', icon: 'i-lucide-tag', content: 'Le prix moyen payé par titre, frais compris. Chaque achat le recalcule (moyenne pondérée) ; une vente ne le change pas. Cours au-dessus du PRU = ligne en gain.' },
   { label: 'Poids et contribution', icon: 'i-lucide-chart-bar', content: 'Le poids montre où est ton argent : une ligne à 40 % pèse lourd dans les variations du portefeuille. La contribution montre d’où vient ta plus-value : une petite ligne peut beaucoup rapporter, une grosse peu.' },
   { label: 'Tendance et moyennes mobiles', icon: 'i-lucide-trending-up', content: 'La moyenne mobile 200 séances (environ 10 mois de cotation) lisse le cours pour montrer la tendance de fond ; celle sur 50 séances montre la tendance récente. Quand les deux et le cours vont dans le même sens, la tendance est nette ; sinon elle hésite.' },
@@ -96,7 +98,7 @@ const lessons = [
     <div>
       <h1 class="text-highlighted text-2xl font-bold tracking-tight">Positions</h1>
       <p class="text-muted mt-1">
-        {{ data?.positions.length ?? 0 }} ligne{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} détenue{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} · cours différés, mis à jour toutes les 10 minutes.
+        {{ data?.positions.length ?? 0 }} ligne{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} détenue{{ (data?.positions.length ?? 0) > 1 ? 's' : '' }} · cours en direct (différés de 15 minutes à Paris).
       </p>
     </div>
 
@@ -119,10 +121,10 @@ const lessons = [
 
     <template v-else-if="data">
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Valorisation" :value="money(data.value)" :hint="`${data.positions.length} lignes`" />
+        <StatTile label="Valorisation" :tick="data.value" :value="money(data.value)" :hint="`${data.positions.length} lignes`" />
         <StatTile label="Coût des titres détenus" :value="money(data.invested)" hint="Frais compris" />
-        <StatTile label="Plus-value latente" :value="signedMoney(data.gain)" :delta="percent(data.gainRate)" :delta-value="data.gain" />
-        <StatTile label="Plus-value réalisée" :value="signedMoney(data.realizedGain)" :hint="data.closed.length ? `dont ${data.closed.length} ligne${data.closed.length > 1 ? 's' : ''} soldée${data.closed.length > 1 ? 's' : ''}` : 'Par tes ventes'" />
+        <StatTile label="Plus-value latente" :tick="data.gain" :value="signedMoney(data.gain)" :delta="percent(data.gainRate)" :delta-value="data.gain" />
+        <StatTile label="Plus-value réalisée" :value="signedMoney(data.realizedGain)" :delta="data.dividends ? `${signedMoney(data.dividends)} de dividendes` : undefined" :delta-value="data.dividends" :hint="data.closed.length ? `dont ${data.closed.length} ligne${data.closed.length > 1 ? 's' : ''} soldée${data.closed.length > 1 ? 's' : ''}` : 'Par tes ventes'" />
       </div>
 
       <div v-if="data.positions.length" class="grid gap-6 lg:grid-cols-2">
@@ -154,7 +156,7 @@ const lessons = [
         </template>
         <!-- Téléphone : une carte par ligne (le tableau ne tient pas) ; un appui ouvre la fiche et son encart d'ordre. -->
         <ul class="divide-default divide-y sm:hidden">
-          <li v-for="p in positions" :key="p.symbol">
+          <li v-for="p in positions" :key="p.symbol" v-tick="p.value">
             <NuxtLink :to="link(p)" class="flex items-center justify-between gap-4 px-4 py-3 tabular-nums">
               <span class="min-w-0">
                 <span class="text-highlighted block truncate font-medium">{{ p.name }}</span>
@@ -177,11 +179,13 @@ const lessons = [
           </template>
           <template #averageCost-cell="{ row }">{{ unitMoney(row.original.averageCost, row.original.currency) }}</template>
           <template #price-cell="{ row }">
-            <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
-            <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+            <div :key="row.original.symbol" v-tick="row.original.price" class="tick-cell">
+              <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
+              <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+            </div>
           </template>
           <template #value-cell="{ row }">
-            <span class="text-highlighted font-medium">{{ money(row.original.value, row.original.currency) }}</span>
+            <span :key="row.original.symbol" v-tick="row.original.value" class="tick-cell text-highlighted font-medium">{{ money(row.original.value, row.original.currency) }}</span>
           </template>
           <template #weight-cell="{ row }">
             <div class="ms-auto flex w-28 items-center gap-2">
@@ -190,8 +194,10 @@ const lessons = [
             </div>
           </template>
           <template #gain-cell="{ row }">
-            <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
-            <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+            <div :key="row.original.symbol" v-tick="row.original.gain" class="tick-cell">
+              <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
+              <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+            </div>
           </template>
           <template #realizedGain-cell="{ row }">
             <span v-if="row.original.realizedGain" :class="gainClass(row.original.realizedGain)">{{ signedMoney(row.original.realizedGain, row.original.currency) }}</span>
@@ -216,6 +222,10 @@ const lessons = [
               <UTooltip text="Vendre"><UButton icon="i-lucide-arrow-up-from-line" color="error" variant="soft" size="sm" :aria-label="`Vendre ${row.original.name}`" :to="`${link(row.original)}?side=sell`" /></UTooltip>
             </div>
           </template>
+          <template #dividends-cell="{ row }">
+            <span v-if="row.original.dividends" :class="gainClass(row.original.dividends)">{{ signedMoney(row.original.dividends, row.original.currency) }}</span>
+            <span v-else class="text-dimmed">—</span>
+          </template>
           <template #fromHigh52-cell="{ row }">
             <span :class="gainClass(row.original.trend.fromHigh52)">{{ percent(row.original.trend.fromHigh52) }}</span>
           </template>
@@ -225,7 +235,7 @@ const lessons = [
       <UCard v-if="data.closed.length" :ui="{ body: 'p-0 sm:p-0' }">
         <template #header>
           <h2 class="text-highlighted font-semibold">Lignes soldées</h2>
-          <p class="text-muted text-sm">Valeurs entièrement vendues : il ne reste que leur plus-value réalisée.</p>
+          <p class="text-muted text-sm">Valeurs entièrement vendues : il ne reste que leur plus-value réalisée et leurs dividendes.</p>
         </template>
         <ul class="divide-default divide-y">
           <li v-for="c in data.closed" :key="c.symbol" class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -233,7 +243,10 @@ const lessons = [
               <span class="text-highlighted group-hover:text-primary block truncate font-medium">{{ c.name }}</span>
               <span class="text-muted text-xs">{{ c.symbol }}</span>
             </NuxtLink>
-            <span class="shrink-0 font-medium tabular-nums" :class="gainClass(c.realizedGain)">{{ signedMoney(c.realizedGain, c.currency) }}</span>
+            <span class="shrink-0 text-right tabular-nums">
+              <span class="block font-medium" :class="gainClass(c.realizedGain)">{{ signedMoney(c.realizedGain, c.currency) }}</span>
+              <span v-if="c.dividends" class="text-xs" :class="gainClass(c.dividends)">{{ signedMoney(c.dividends, c.currency) }} de dividendes</span>
+            </span>
           </li>
         </ul>
       </UCard>

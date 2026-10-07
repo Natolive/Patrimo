@@ -77,8 +77,8 @@ const columns: TableColumn<PurchaseDto>[] = [
         <template #side-cell="{ row }">
           <UBadge
             :label="TRADE_SIDE_LABELS[row.original.side]"
-            :icon="row.original.side === 'buy' ? 'i-lucide-arrow-down-to-line' : 'i-lucide-arrow-up-from-line'"
-            :color="row.original.side === 'buy' ? 'success' : 'error'"
+            :icon="SIDE_ICON[row.original.side]"
+            :color="SIDE_COLOR[row.original.side]"
             variant="subtle"
           />
         </template>

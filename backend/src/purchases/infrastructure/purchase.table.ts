@@ -4,7 +4,7 @@ import { users } from '../../users/infrastructure/user.table.js';
 
 export const tradeSide = pgEnum('trade_side', TRADE_SIDES);
 
-// Achats et ventes ; table nommée avant l'ajout des ventes.
+// Achats, ventes et dividendes ; table nommée avant l'ajout des ventes.
 export const purchases = pgTable(
   'purchases',
   {

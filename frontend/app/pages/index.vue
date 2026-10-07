@@ -5,7 +5,8 @@ import type { TableColumn } from '@nuxt/ui'
 useHead({ title: 'Tableau de bord' })
 
 const api = useApi()
-const { data, error, refresh, status } = await useAsyncData('portfolio', () => api<PortfolioDto>('/portfolio'))
+const { data, error, refresh } = await useAsyncData('portfolio', () => api<PortfolioDto>('/portfolio'))
+useLiveRefresh(() => data.value?.positions.map((p) => p.symbol) ?? [], refresh)
 
 const range = ref<RangeLabel>('Tout')
 const history = computed(() => inRange(data.value?.history ?? [], range.value))
@@ -27,7 +28,7 @@ const columns: TableColumn<PositionDto>[] = [
     <div class="space-y-6">
       <div>
         <h1 class="text-highlighted text-2xl font-bold tracking-tight">Mon portefeuille</h1>
-        <p class="text-muted mt-1">Cours différés, mis à jour toutes les 10 minutes.</p>
+        <p class="text-muted mt-1">Cours en direct, avec le différé de chaque place (15 minutes à Paris).</p>
       </div>
 
       <MarketClock />
@@ -47,12 +48,13 @@ const columns: TableColumn<PositionDto>[] = [
         <p class="text-highlighted mt-4 font-semibold">Ton portefeuille est vide</p>
         <p class="text-muted mt-1">Ajoute tes achats pour suivre leur valeur et leur tendance.</p>
         <p v-if="data.realizedGain" class="mt-2 font-medium tabular-nums" :class="gainClass(data.realizedGain)">{{ signedMoney(data.realizedGain) }} réalisés par tes ventes</p>
+        <p v-if="data.dividends" class="mt-1 font-medium tabular-nums" :class="gainClass(data.dividends)">{{ signedMoney(data.dividends) }} de dividendes perçus</p>
         <UButton label="Ajouter une opération" icon="i-lucide-plus" to="/purchases" class="mt-6" />
       </UCard>
 
       <template v-else-if="data">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <UCard class="sm:col-span-2" :ui="{ body: 'p-4 sm:p-5' }">
+          <UCard v-tick="data.value" class="sm:col-span-2" :ui="{ body: 'p-4 sm:p-5' }">
             <p class="text-muted text-sm">Valorisation</p>
             <p class="text-highlighted mt-1 text-5xl font-semibold tracking-tight">{{ money(data.value) }}</p>
             <p class="mt-2 font-medium tabular-nums" :class="gainClass(data.gain)">
@@ -62,19 +64,20 @@ const columns: TableColumn<PositionDto>[] = [
           <StatTile
             label="Investi, frais compris"
             :value="money(data.invested)"
-            :hint="data.realizedGain ? undefined : 'Coût des titres détenus'"
+            :hint="data.dividends ? `${money(data.dividends)} de dividendes perçus` : data.realizedGain ? undefined : 'Coût des titres détenus'"
             :delta="data.realizedGain ? `${signedMoney(data.realizedGain)} réalisés par tes ventes` : undefined"
             :delta-value="data.realizedGain"
           />
           <StatTile
             label="Variation du jour"
+            :tick="data.dayChange"
             :value="signedMoney(data.dayChange)"
             :delta="percent(data.dayChangeRate)"
             :delta-value="data.dayChange"
           />
         </div>
 
-        <UCard :class="{ 'opacity-60': status === 'pending' }">
+        <UCard>
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="text-highlighted font-semibold">Évolution du portefeuille</h2>
@@ -110,13 +113,19 @@ const columns: TableColumn<PositionDto>[] = [
             <template #quantity-cell="{ row }">{{ quantity(row.original.quantity) }}</template>
             <template #averageCost-cell="{ row }">{{ unitMoney(row.original.averageCost, row.original.currency) }}</template>
             <template #price-cell="{ row }">
-              <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
-              <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+              <div :key="row.original.symbol" v-tick="row.original.price" class="tick-cell">
+                <span class="block">{{ unitMoney(row.original.price, row.original.currency) }}</span>
+                <span class="text-xs" :class="gainClass(row.original.dayChangeRate)">{{ percent(row.original.dayChangeRate) }}</span>
+              </div>
             </template>
-            <template #value-cell="{ row }">{{ money(row.original.value, row.original.currency) }}</template>
+            <template #value-cell="{ row }">
+              <span :key="row.original.symbol" v-tick="row.original.value" class="tick-cell">{{ money(row.original.value, row.original.currency) }}</span>
+            </template>
             <template #gain-cell="{ row }">
-              <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
-              <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+              <div :key="row.original.symbol" v-tick="row.original.gain" class="tick-cell">
+                <span class="block font-medium" :class="gainClass(row.original.gain)">{{ signedMoney(row.original.gain, row.original.currency) }}</span>
+                <span class="text-xs" :class="gainClass(row.original.gain)">{{ percent(row.original.gainRate) }}</span>
+              </div>
             </template>
             <template #weight-cell="{ row }">{{ percent(row.original.weight, false) }}</template>
             <template #trend-cell="{ row }"><TrendBadge :signal="row.original.trend.signal" /></template>
